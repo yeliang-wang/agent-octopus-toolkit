@@ -64,6 +64,7 @@ Codex agents 安装到目标项目的 `.codex/agents/`，不会覆盖 `.codex/sk
 | 不同 OS 缺少 `curl`、`lsof`、`netstat`、`ss` 等命令导致流程中断。 | 沙箱使用 Python 标准库提供 HTTP、端口、产物扫描等 fallback。 |
 | Git 同步、提交、推送、MR、CI 被混成一个高风险动作。 | `gitlab-sync` 明确每一步的确认点和禁止动作。 |
 | 用户流调试绕过 UI 或缺少截图证据。 | `user-flow-debug` 要求真实 Dashboard 操作和关键节点截图。 |
+| 被安装项目修改了 agent，但没有 toolkit 仓库权限。 | 目标项目生成离线 proposal，toolkit 维护者 review 后显式 accept。 |
 
 ## What's Under The Hood
 
@@ -181,6 +182,67 @@ cd /path/to/your/project
 
 Codex agents 是项目级安装；每个已安装过 `.codex/agents/` 的项目都需要在该项目根目录执行一次更新。
 
+## Propose Changes Back
+
+被安装项目可以修改本地 agent，但这些修改不会自动回流到 `agent-octopus-toolkit`。回流使用离线提案包，避免要求业务项目拥有 GitLab/GitHub 权限，也避免未经确认的修改直接进入 toolkit。
+
+流程：
+
+```text
+installed project edit
+  -> propose-changes.py creates an offline proposal
+  -> toolkit maintainer reviews diff
+  -> apply-proposal.py --accept writes accepted files into toolkit
+  -> maintainer commits and pushes toolkit
+```
+
+在安装了 Codex agents 的目标项目里生成提案：
+
+```bash
+cd /path/to/your/project
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/propose-changes.py \
+  --tool codex \
+  --title "improve gitlab-sync for project X"
+```
+
+这会生成：
+
+```text
+.agent-octopus/proposals/proposal-YYYYMMDD-HHMMSS/
+├── manifest.json
+├── README.md
+├── diffs/
+└── files/
+```
+
+目标项目只需要把这个目录交给 toolkit 维护者；不需要 GitLab/GitHub push 权限。
+
+维护者在 `agent-octopus-toolkit` 仓库里 review：
+
+```bash
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/apply-proposal.py \
+  /path/to/proposal-YYYYMMDD-HHMMSS
+```
+
+确认接受后才写入 toolkit 源文件：
+
+```bash
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/apply-proposal.py \
+  /path/to/proposal-YYYYMMDD-HHMMSS \
+  --accept
+```
+
+也可以只接受某个文件：
+
+```bash
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/apply-proposal.py \
+  /path/to/proposal-YYYYMMDD-HHMMSS \
+  --file integrations/codex/agents/gitlab-sync.toml \
+  --accept
+```
+
+接受后由 toolkit 维护者正常执行 `git diff`、测试、commit、push，再让目标项目通过 `install.sh --update` 获取新版本。
+
 ## Development
 
 检查安装脚本：
@@ -195,6 +257,12 @@ bash -n scripts/install.sh
 python3 -m py_compile sandbox/octopus_sandbox.py
 bin/octopus-sandbox --help
 bin/octopus-sandbox doctor
+```
+
+检查回流脚本：
+
+```bash
+python3 -m py_compile scripts/propose-changes.py scripts/apply-proposal.py
 ```
 
 新增可复用诊断能力时，优先放到 `sandbox/octopus_sandbox.py`，然后更新对应 agent 指令和 Codex TOML 版本。不要把重复诊断逻辑写进目标项目的临时脚本。
