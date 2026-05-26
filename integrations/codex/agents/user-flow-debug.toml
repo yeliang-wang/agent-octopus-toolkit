@@ -23,27 +23,48 @@ Default JSNX validation is allowed only when the user explicitly asks for it:
 - Scenario: 贷后退出预警辅助
 - Attachment: /path/to/attachment.xlsx
 
+Runtime flow discovery:
+- Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded domain contract.
+- Do not infer the flow from the domain name alone, and do not reuse the JSNX attachment-first flow for other domains.
+- Use the target Domain ID and Scenario ID to inspect plan/scenario metadata, step order/status, trigger mode, step interaction, requiredInputs, attachment requirements, directory/path requirements, output declarations, visible agent messages, questions, choices, and artifact links.
+- Classify the flow before the step loop:
+  - attachment-driven: the run starts from one or more user-uploaded files, then proceeds through review/choice steps.
+  - time-driven: each scheduled step is initiated by the agent, then the user confirms and provides required files, directories, or text for that step.
+  - chat-driven: the run proceeds primarily through conversational prompts without required file input.
+  - hybrid: the run combines scheduled prompts, attachment uploads, directory paths, and review choices.
+- For attachment-driven flows, upload only the attachments required by the first visible step or start form.
+- For time-driven flows, wait for the agent's scheduled step message in the UI, then provide exactly the required input for that step. Do not preload every attachment unless the UI explicitly asks for it.
+- Production UI must not expose scheduler/tick/debug controls. For local-dev time-driven E2E, prefer server-side scheduler plus a test schedule and isolated output root. Call internal tick APIs only when the user explicitly authorizes test-only internal advancement.
+- For directory/path inputs, submit the path through the chat or path control only when the visible step asks for a directory/path.
+- For per-step uploads, upload the concrete files requested by the visible step, not synthetic manifests or helper files.
+- For choice/review flows, read the actual UI choices and submit the selected choice through chat.
+- If the flow type is ambiguous, capture the page state, inspect the loaded plan/scenario contract, and ask one focused clarification instead of guessing.
+
 Non-negotiable rules:
 - Use browser automation against the real Dashboard UI.
 - Use the toolkit sandbox for OS-sensitive checks: prefer $AGENT_OCTOPUS_TOOLKIT_HOME/bin/octopus-sandbox; if it is not set, use /Users/wangyejing/github/agent-octopus-toolkit/bin/octopus-sandbox when it exists.
+- If browser automation or Playwright is missing, do not download or install it under a target-project path or /tmp/datacrew-playwright. Update or install the reusable Playwright/browser automation capability under ${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit} so any project with agent-octopus-toolkit installed can use it through the sandbox.
 - Do not create ad hoc Python scripts in the target agent workspace. If a missing diagnostic helper is needed, ask to add it to the toolkit sandbox instead.
 - Do not invent business content, fake JDBC/MCP results, fake reports, fake screenshots, fake artifacts, or fake user choices.
 - Questions, options, roles, modules, and outputs must come from loaded domain contracts and runtime responses.
+- Interaction style must come from runtime flow discovery. Never assume the JSNX flow unless the selected run is actually attachment-driven or the user explicitly requested default JSNX validation.
 - Submit user choices through the chat input and send button, for example A. ... or B. ....
 - Capture screenshots before submitting a step answer, after submitting, after step result/artifacts appear, and final downloads.
 - Follow the selected fix policy and do not silently escalate.
 - When validating modification ability, use B on selected steps and verify rerun/acceptance.
 - Business run outputs normally live in output/runs/<runId>/; final accepted deliverables must be under output/runs/<runId>/final/.
+- Isolate user-flow runs from historical or unrelated runs. For local-dev, prefer a dedicated DATACREW_OUTPUT_ROOT per E2E session, or explicitly archive/ignore stale runs before scheduler-driven tests.
+- When the UI renders agent speakers from domain roles, verify each step message displays the expected owner role profile. Default assistant/colleague identity may appear for run-start or non-step messages only.
 
 Workflow:
 1. Confirm target details.
-2. Prepare runtime. Before OS-level diagnostics, run "${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}/bin/octopus-sandbox" doctor. Prefer sandbox health-check for Dashboard/API reachability and sandbox port-check for local service ports instead of curl, lsof, netstat, or ss.
-3. Open Dashboard URL in a browser, type a scenario-matching user intent, upload attachment through UI if needed, send, and save 00-start.png.
-4. Execute each step by reading actual UI choices, submitting a valid typed choice through chat, capturing screenshots, and verifying artifacts.
-5. Validate step and final artifacts, including final/manifest.json when the flow completes. Use sandbox find-artifacts for local output/runs discovery.
+2. Prepare runtime. Before OS-level diagnostics, run "${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}/bin/octopus-sandbox" doctor. Prefer sandbox health-check for Dashboard/API reachability and sandbox port-check for local service ports instead of curl, lsof, netstat, or ss. For local-dev, choose an isolated output root unless resuming an existing run, wait for execution socket listening, wait for API health, then start Dashboard.
+3. Open Dashboard URL in a browser, confirm the requested Domain ID and Scenario ID, discover the runtime flow type from the visible page state and loaded domain contract, type a scenario-matching user intent only when the UI requires it, upload attachments only when the discovered flow or visible start form requires them, send, and save 00-start.png. For time-driven runs, wait for agent messages rather than typing arbitrary prompts outside a requested step input.
+4. Execute each step by reading the actual step trigger, required inputs, upload controls, path fields, text prompts, choices, and expected speaker/role from the UI/runtime contract; provide only that step's required input; submit choices through chat when choices are presented; wait for expected UI state before screenshots; capture screenshots; and verify artifacts.
+5. Validate step and final artifacts, including final/manifest.json when the flow completes. Use sandbox find-artifacts for local output/runs discovery. Record a step validation matrix: step ID, input mode, displayed speaker/role, artifact count, pass/fail.
 6. On failures, capture screenshot, collect logs and run-state evidence, identify the smallest failing boundary, apply only the selected fix policy, restart only necessary allowed processes, and rerun as appropriate. Keep repeatable diagnostics in the toolkit sandbox; target-project writes are only for requested code/config fixes, screenshots, logs, or run outputs.
 
 For deployed environments, do not directly edit deployed code or generated output to make a run pass. Fix locally, validate, package, deploy through the approved update path, then verify again.
 
-Final report must include Dashboard URL, run ID, screenshot directory, final output directory, final artifacts, MCP/JDBC mode, fix policy, options chosen, fixes applied if any, and remaining risks or tests not run.
+Final report must include Dashboard URL, run ID, screenshot directory, final output directory, final artifacts, MCP/JDBC mode, fix policy, runtime flow type, output isolation strategy, unrelated runs advanced if any, step validation matrix, options chosen, fixes applied if any, and remaining risks or tests not run.
 """

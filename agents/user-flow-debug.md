@@ -30,6 +30,36 @@ Before starting a user-flow simulation, determine:
 
 Ask only for missing values. Do not silently assume the JSNX scenario unless the user asks for the default validation.
 
+## Runtime Flow Discovery
+
+Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded domain contract. Do not infer the flow from the domain name alone, and do not reuse the JSNX attachment-first flow for other domains.
+
+Use the target Domain ID and Scenario ID to inspect the actual runtime state exposed by the page and its normal backing responses, including:
+
+- Plan or scenario metadata.
+- Step list, order, status, and trigger mode.
+- Step `interaction`, `requiredInputs`, attachment requirements, directory/path requirements, and output declarations.
+- Visible agent messages, questions, choices, and artifact links.
+- Schedule or time-trigger hints when present.
+
+Classify the flow before starting the step loop:
+
+- `attachment-driven`: the run starts from one or more user-uploaded files, then proceeds through review/choice steps.
+- `time-driven`: each scheduled step is initiated by the agent, then the user confirms and provides required files, directories, or text for that step.
+- `chat-driven`: the run proceeds primarily through conversational prompts without required file input.
+- `hybrid`: the run combines scheduled prompts, attachment uploads, directory paths, and review choices.
+
+After classification, follow the UI contract for the selected run:
+
+- For attachment-driven flows, upload only the attachments required by the first visible step or start form.
+- For time-driven flows, wait for the agent's scheduled step message in the UI, then provide exactly the required input for that step. Do not preload every attachment unless the UI explicitly asks for it.
+- Production UI must not expose scheduler/tick/debug controls. If a local-dev time-driven run needs accelerated testing, prefer server-side scheduler with a test schedule and isolated output root. Call internal tick APIs only when the user explicitly authorizes test-only internal advancement.
+- For directory/path inputs, submit the path through the chat or path control only when the visible step asks for a directory/path.
+- For per-step uploads, upload the concrete files requested by the visible step, not synthetic manifests or helper files.
+- For choice/review flows, read the actual UI choices and submit the selected choice through chat.
+
+If the flow type is ambiguous, capture the page state, inspect the loaded plan/scenario contract, and ask one focused clarification instead of guessing.
+
 ## Default JSNX Validation
 
 Use these values only when the user explicitly asks for default production validation:
@@ -44,14 +74,18 @@ Do not reuse a previous run unless the user explicitly asks to resume.
 
 - Use real Dashboard UI browser automation.
 - Use the toolkit sandbox for OS-sensitive checks: prefer `$AGENT_OCTOPUS_TOOLKIT_HOME/bin/octopus-sandbox`; if it is not set, use `/Users/wangyejing/github/agent-octopus-toolkit/bin/octopus-sandbox` when it exists.
+- If browser automation or Playwright is missing, do not download or install it under a target-project path or `/tmp/datacrew-playwright`. Update or install the reusable Playwright/browser automation capability under `${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}` so any project with `agent-octopus-toolkit` installed can use it through the sandbox.
 - Do not create ad hoc Python scripts in the target agent workspace. If a missing diagnostic helper is needed, ask to add it to the toolkit sandbox instead.
 - Do not invent business content, fake JDBC/MCP results, fake reports, fake screenshots, fake artifacts, or fake user choices.
 - Questions, options, roles, modules, and outputs must come from domain contracts and runtime responses.
+- Interaction style must come from runtime flow discovery. Never assume the JSNX flow unless the selected run is actually attachment-driven or the user explicitly requested default JSNX validation.
 - User choices must be submitted through the chat input and send button, for example `A. ...` or `B. ...`.
 - Capture screenshots before submitting a step answer, after submitting, after step result/artifacts appear, and final downloads.
 - Follow the selected fix policy. Do not silently escalate from diagnosis to runtime changes, code changes, or deployed module updates.
 - When validating modification ability, do not always choose `A`; use `B` on selected steps and verify the same step can be rerun or accepted.
 - Business run outputs normally live in `output/runs/<runId>/`; final accepted deliverables must be under `output/runs/<runId>/final/`.
+- Isolate user-flow runs from historical or unrelated runs. For local-dev, prefer a dedicated `DATACREW_OUTPUT_ROOT` per E2E session, or explicitly archive/ignore stale runs before scheduler-driven tests.
+- When the UI renders agent speakers from domain roles, verify each step message displays the expected owner role profile. Default assistant/colleague identity may appear for run-start or non-step messages only.
 
 ## Workflow
 
@@ -103,10 +137,11 @@ For `local-dev`, start production-like local module processes from the current w
 1. Stop stale local agent processes if they conflict with requested ports.
 2. Ensure `domains/<domainId>` exists.
 3. Configure MCP/JDBC mode.
-4. Start the execution service.
-5. Start the agent service.
-6. Start the dashboard service.
-7. Verify local Dashboard and `/api/agent/health`.
+4. Choose an isolated output root for this E2E session unless the user explicitly asks to resume an existing run.
+5. Start the execution service and wait until the socket is actually listening.
+6. Start the agent service and wait until `/api/agent/health` is healthy.
+7. Start the dashboard service.
+8. Verify local Dashboard and `/api/agent/health`.
 
 Use sandbox port checks instead of OS-specific `lsof`, `netstat`, or `ss`:
 
@@ -122,30 +157,53 @@ agent service: 18081
 dashboard service: 18080 or another free local dashboard port
 ```
 
+For time-driven local-dev validation:
+
+- Prefer enabling the server-side scheduler and using a test schedule that reaches the target steps during the test window.
+- Keep the production UI free of tick/debug controls.
+- Use internal scheduler tick endpoints only when the user explicitly allows internal test advancement, and still submit all user inputs through the Dashboard UI.
+- Confirm only the target run is being evaluated. If tick or scheduler advances more than one run, report the extra run IDs and avoid counting them as target evidence.
+
 ### 3. Start Browser Run
 
 1. Open Dashboard URL.
-2. Type a user intent matching the selected scenario.
-3. Upload the selected attachment if required.
-4. Click the visible send/submit button.
-5. Wait for the first Agent step question and task list.
-6. Save screenshot `00-start.png`.
+2. Confirm the page selected the requested Domain ID and Scenario ID.
+3. Discover the runtime flow type from the visible page state and loaded domain contract.
+4. Type a user intent matching the selected scenario only when the UI requires an initial user message.
+5. Upload the selected attachment only when the discovered flow or visible start form requires it.
+6. Click the visible send/submit button.
+7. Wait for the first Agent step question and task list.
+8. Save screenshot `00-start.png`.
 
 Do not bypass attachment upload with local file parsing or direct APIs.
+
+For time-driven runs, the first visible user action after opening the chat is normally to wait for an agent message. Do not type arbitrary prompts before a step asks for input unless the UI contract explicitly supports free-form chat outside the current step.
 
 ### 4. Execute Step Loop
 
 For each step:
 
 1. Screenshot the Agent question, roles, task list, and artifacts.
-2. Read the actual choices from the UI.
-3. Choose a valid option from the UI contract.
-4. Type the choice into chat input, such as `A. 接受...` or `B. 修改为...`.
-5. Send it.
-6. Screenshot the submitted user bubble.
+2. Read the step trigger, required inputs, upload controls, path fields, text prompts, and choices from the UI.
+3. Provide only the inputs required by this step:
+   - upload files when the step asks for file attachments;
+   - submit a directory/path when the step asks for a path;
+   - type free-form text when the step asks for text;
+   - submit a valid UI choice when the step asks for review/approval.
+4. Type choices into chat input, such as `A. 接受...` or `B. 修改为...`, when the UI presents choice labels.
+5. Send or submit through the visible UI control.
+6. Screenshot the submitted user bubble or uploaded input state.
 7. Wait for the step execution or review result.
 8. Screenshot result, task status change, and output attachments.
 9. Verify artifact links through the UI.
+
+Before each screenshot, wait for the UI state that proves the step is ready or complete:
+
+- expected agent question or choice text is visible;
+- expected speaker name or role profile is visible when role-based chat is enabled;
+- submit button is enabled before sending and disabled or guarded during submission;
+- step artifact button appears before result screenshots;
+- final artifact count and `final/manifest.json` are visible or discoverable before final screenshots.
 
 Use clear screenshot names:
 
@@ -164,6 +222,7 @@ For every completed step:
 - Confirm final artifacts appear only at final delivery.
 - Confirm `final/manifest.json` and final deliverables exist after completion.
 - Inspect expected HTML reports for selected template, uploaded attachment context, and latest step outputs.
+- Record the displayed speaker for each step and compare it with the step owner role when the runtime exposes role profiles.
 
 Use the sandbox for local artifact discovery:
 
@@ -197,6 +256,9 @@ End with:
 - Final artifacts found
 - MCP/JDBC mode
 - Fix policy
+- Runtime flow type: `attachment-driven`, `time-driven`, `chat-driven`, or `hybrid`
+- Output isolation strategy and whether any unrelated run was advanced during the test
+- Step validation matrix: step ID, expected input mode, displayed speaker/role, artifact count, pass/fail
 - Options chosen, especially `B` choices and submitted modification
 - Fixes applied, if any
 - Remaining risks or tests not run
