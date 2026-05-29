@@ -9,6 +9,7 @@ Required inputs before a run:
 - Run target: deployed or local-dev.
 - Domain ID.
 - Scenario name or scenario ID.
+- Dashboard entry UI: the exact Dashboard page/route to operate, for example `index.html`, `domain-chat.html`, `run-detail.html`, or a full Dashboard URL including that route.
 - Attachment path, or explicit statement that no attachment is needed.
 - Dashboard URL for deployed, or local ports/startup choices for local-dev.
 - MCP/JDBC mode: real or mock.
@@ -24,6 +25,12 @@ Default JSNX validation is allowed only when the user explicitly asks for it:
 - Attachment: /path/to/attachment.xlsx
 
 Runtime flow discovery:
+- Treat the Dashboard entry UI as an explicit test input and a routing contract. Do not infer the entry page from Domain ID, Scenario ID, scenario name, previous runs, or examples. If the entry UI is missing or ambiguous, ask one focused clarification before opening the browser.
+- Use only the specified entry UI as the user-facing starting point:
+  - `index.html`: generic production Chat entry. Start from the visible prompt/composer and let the product identify or bind the domain/scenario through the normal UI flow unless the page itself exposes domain/scenario controls.
+  - `domain-chat.html`: domain-scoped chat entry. Include the requested `domainId` and `scenarioId` query parameters only when this entry UI is explicitly selected.
+  - `run-detail.html`: run inspection/resume entry. Require a concrete `runId`.
+  - Other route/full URL: follow exactly as supplied and report the route used.
 - Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded domain contract.
 - Do not infer the flow from the domain name alone, and do not reuse the JSNX attachment-first flow for other domains.
 - Use the target Domain ID and Scenario ID to inspect plan/scenario metadata, step order/status, trigger mode, step interaction, requiredInputs, attachment requirements, directory/path requirements, output declarations, visible agent messages, questions, choices, and artifact links.
@@ -59,12 +66,12 @@ Non-negotiable rules:
 Workflow:
 1. Confirm target details.
 2. Prepare runtime. Before OS-level diagnostics, run "${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}/bin/octopus-sandbox" doctor. Prefer sandbox health-check for Dashboard/API reachability and sandbox port-check for local service ports instead of curl, lsof, netstat, or ss. For local-dev, choose an isolated output root unless resuming an existing run, wait for execution socket listening, wait for API health, then start Dashboard.
-3. Open Dashboard URL in a browser, confirm the requested Domain ID and Scenario ID, discover the runtime flow type from the visible page state and loaded domain contract, type a scenario-matching user intent only when the UI requires it, upload attachments only when the discovered flow or visible start form requires them, send, and save 00-start.png. For time-driven runs, wait for agent messages rather than typing arbitrary prompts outside a requested step input.
+3. Open the explicitly requested Dashboard entry UI in a browser, confirm the route being tested, then confirm the requested Domain ID and Scenario ID through the visible UI/runtime response. Discover the runtime flow type from the visible page state and loaded domain contract, type a scenario-matching user intent only when the selected entry UI requires it, upload attachments only when the discovered flow or visible start form requires them, send, and save 00-start.png. For time-driven runs, wait for agent messages rather than typing arbitrary prompts outside a requested step input.
 4. Execute each step by reading the actual step trigger, required inputs, upload controls, path fields, text prompts, choices, and expected speaker/role from the UI/runtime contract; provide only that step's required input; submit choices through chat when choices are presented; wait for expected UI state before screenshots; capture screenshots; and verify artifacts.
 5. Validate step and final artifacts, including final/manifest.json when the flow completes. Use sandbox find-artifacts for local output/runs discovery. Record a step validation matrix: step ID, input mode, displayed speaker/role, artifact count, pass/fail.
 6. On failures, capture screenshot, collect logs and run-state evidence, identify the smallest failing boundary, apply only the selected fix policy, restart only necessary allowed processes, and rerun as appropriate. Keep repeatable diagnostics in the toolkit sandbox; target-project writes are only for requested code/config fixes, screenshots, logs, or run outputs.
 
 For deployed environments, do not directly edit deployed code or generated output to make a run pass. Fix locally, validate, package, deploy through the approved update path, then verify again.
 
-Final report must include Dashboard URL, run ID, screenshot directory, final output directory, final artifacts, MCP/JDBC mode, fix policy, runtime flow type, output isolation strategy, unrelated runs advanced if any, step validation matrix, options chosen, fixes applied if any, and remaining risks or tests not run.
+Final report must include Dashboard entry UI, actual URL opened, Dashboard URL, run ID, screenshot directory, final output directory, final artifacts, MCP/JDBC mode, fix policy, runtime flow type, output isolation strategy, unrelated runs advanced if any, step validation matrix, options chosen, fixes applied if any, and remaining risks or tests not run. Call out any mismatch between the requested entry UI and redirects/navigation observed during the run.
 """
