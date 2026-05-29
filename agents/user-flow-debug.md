@@ -17,6 +17,7 @@ Before starting a user-flow simulation, determine:
 - Run target: `deployed` or `local-dev`.
 - Domain ID, for example `jsnx`.
 - Scenario name or scenario ID.
+- Dashboard entry UI: the exact Dashboard page/route to operate, for example `index.html`, `domain-chat.html`, `run-detail.html`, or a full Dashboard URL including that route.
 - Attachment path, or explicit statement that no attachment is needed.
 - Dashboard URL for `deployed`, or local ports/startup choices for `local-dev`.
 - MCP/JDBC mode: `real` or `mock`.
@@ -31,6 +32,15 @@ Before starting a user-flow simulation, determine:
 Ask only for missing values. Do not silently assume the JSNX scenario unless the user asks for the default validation.
 
 ## Runtime Flow Discovery
+
+Treat the Dashboard entry UI as an explicit test input and routing contract. Do not infer the entry page from Domain ID, Scenario ID, scenario name, previous runs, or examples. If the entry UI is missing or ambiguous, ask one focused clarification before opening the browser.
+
+Use only the specified entry UI as the user-facing starting point:
+
+- `index.html`: generic production Chat entry. Start from the visible prompt/composer and let the product identify or bind the domain/scenario through the normal UI flow unless the page itself exposes domain/scenario controls.
+- `domain-chat.html`: domain-scoped chat entry. Include the requested `domainId` and `scenarioId` query parameters only when this entry UI is explicitly selected.
+- `run-detail.html`: run inspection/resume entry. Require a concrete `runId`.
+- Other route/full URL: follow exactly as supplied and report the route used.
 
 Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded domain contract. Do not infer the flow from the domain name alone, and do not reuse the JSNX attachment-first flow for other domains.
 
@@ -95,11 +105,12 @@ Collect missing target information:
 
 1. Domain.
 2. Scenario.
-3. Attachment.
-4. Run target and Dashboard URL or local ports.
-5. MCP/JDBC mode and run mode.
-6. Screenshot directory.
-7. Fix policy.
+3. Dashboard entry UI.
+4. Attachment.
+5. Run target and Dashboard URL or local ports.
+6. MCP/JDBC mode and run mode.
+7. Screenshot directory.
+8. Fix policy.
 
 If nothing is provided, ask:
 
@@ -107,13 +118,14 @@ If nothing is provided, ask:
 请确认本次用户流模拟：
 1. 业务域：例如 jsnx
 2. 业务场景：请选择场景名称或 ID
-3. 上传附件路径：如无附件请明确说明
-4. 运行目标：deployed 生产/类生产环境，还是 local-dev IDEA 本地开发环境
-5. Dashboard URL，或本地端口配置
-6. MCP/JDBC 模式：real 或 mock
-7. 执行方式：新 run 或 resume runId
-8. 截图保存目录
-9. 出现问题时的处理策略：diagnose-only / runtime-fix / code-fix / module-update
+3. Dashboard 入口 UI：例如 index.html、domain-chat.html、run-detail.html 或完整入口 URL
+4. 上传附件路径：如无附件请明确说明
+5. 运行目标：deployed 生产/类生产环境，还是 local-dev IDEA 本地开发环境
+6. Dashboard URL，或本地端口配置
+7. MCP/JDBC 模式：real 或 mock
+8. 执行方式：新 run 或 resume runId
+9. 截图保存目录
+10. 出现问题时的处理策略：diagnose-only / runtime-fix / code-fix / module-update
 ```
 
 ### 2. Prepare Runtime
@@ -166,8 +178,8 @@ For time-driven local-dev validation:
 
 ### 3. Start Browser Run
 
-1. Open Dashboard URL.
-2. Confirm the page selected the requested Domain ID and Scenario ID.
+1. Open the explicitly requested Dashboard entry UI.
+2. Confirm the route being tested, then confirm the page selected or bound the requested Domain ID and Scenario ID.
 3. Discover the runtime flow type from the visible page state and loaded domain contract.
 4. Type a user intent matching the selected scenario only when the UI requires an initial user message.
 5. Upload the selected attachment only when the discovered flow or visible start form requires it.
@@ -175,7 +187,7 @@ For time-driven local-dev validation:
 7. Wait for the first Agent step question and task list.
 8. Save screenshot `00-start.png`.
 
-Do not bypass attachment upload with local file parsing or direct APIs.
+Do not switch to another entry UI because it looks more convenient. Do not bypass attachment upload with local file parsing or direct APIs.
 
 For time-driven runs, the first visible user action after opening the chat is normally to wait for an agent message. Do not type arbitrary prompts before a step asks for input unless the UI contract explicitly supports free-form chat outside the current step.
 

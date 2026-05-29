@@ -22,6 +22,7 @@
 | Agent | Purpose |
 | --- | --- |
 | `gitlab-sync` | GitLab 分支同步、提交、推送、MR/CI 边界和冲突处理 |
+| `mcp-agent-e2e-designer` | 基于 DDD 读取 MCP 智能体项目代码，设计、保存、执行、诊断和 code-fix E2E usecase |
 | `user-flow-debug` | 通过 Dashboard UI 做真实用户流调试、截图留证、产物校验和受控修复 |
 
 ## This Is For You If
@@ -37,7 +38,7 @@
 
 ### Shared Agents
 
-一套源文件同时生成 Claude Code Markdown agents 和 Codex TOML agents。Claude Code 使用 `agents/*.md`，Codex 使用 `integrations/codex/agents/*.toml`。
+通用 agent 源文件放在 `agents/*.md`。Claude Code 直接安装 Markdown agents；Codex 安装 `integrations/codex/agents/*.toml` 中的分发版本。
 
 ### Portable Sandbox
 
@@ -169,16 +170,16 @@ GitLab 同步：
 用户流调试：
 
 ```text
-使用 user-flow-debug，跑 deployed 环境的目标场景，新 run，real JDBC，截图到 /tmp/user-flow，策略 diagnose-only。
+使用 user-flow-debug，入口 UI 为 index.html，跑 deployed 环境的目标场景，新 run，real JDBC，截图到 /tmp/user-flow，策略 diagnose-only。
 ```
 
 time-driven 本地调试示例：
 
 ```text
-使用 user-flow-debug，跑 local-dev Dashboard 用户流。请使用独立 output root，启用服务端 scheduler 或测试时间窗口，不要通过 UI 暴露 tick。截图到 /tmp/user-flow，策略 diagnose-only。
+使用 user-flow-debug，入口 UI 为 domain-chat.html，跑 local-dev Dashboard 用户流。请使用独立 output root，启用服务端 scheduler 或测试时间窗口，不要通过 UI 暴露 tick。截图到 /tmp/user-flow，策略 diagnose-only。
 ```
 
-最终报告会包含 runId、截图目录、final 产物、runtime flow type、output 隔离策略，以及每个 step 的输入模式、显示角色、artifact 数量和 pass/fail。
+最终报告会包含入口 UI、实际打开 URL、runId、截图目录、final 产物、runtime flow type、output 隔离策略，以及每个 step 的输入模式、显示角色、artifact 数量和 pass/fail。
 
 ## Update Installed Agents
 

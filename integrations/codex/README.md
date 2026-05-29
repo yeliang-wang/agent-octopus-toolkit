@@ -1,6 +1,8 @@
 # agent 八爪鱼工具包：Codex Integration
 
-Codex agents are provided as TOML files in `integrations/codex/agents/`.
+Codex agents are installed as TOML files from `integrations/codex/agents/`.
+
+The canonical reusable agent source lives under the toolkit `agents/` directory. The TOML files here are Codex install/distribution variants.
 
 Install them into a project-scoped `.codex/agents/` directory:
 
@@ -23,6 +25,7 @@ This does not replace existing Codex skills under `.codex/skills/`; it adds proj
 
 `user-flow-debug` is intended for browser-level Dashboard validation, not API-only smoke testing. It discovers the runtime flow from the live Dashboard and loaded domain contract before acting:
 
+- The caller must provide the Dashboard entry UI, such as `index.html`, `domain-chat.html`, `run-detail.html`, or a full entry URL. The agent must not infer or switch entry pages from domain/scenario names.
 - `attachment-driven`: upload only the attachments requested by the visible start form or first step.
 - `time-driven`: wait for the agent's scheduled step message, then submit the required per-step attachment, path, or text.
 - `chat-driven`: proceed through visible conversational prompts.
