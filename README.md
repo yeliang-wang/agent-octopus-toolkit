@@ -22,7 +22,7 @@
 | Agent | Purpose |
 | --- | --- |
 | `gitlab-sync` | GitLab 分支同步、提交、推送、MR/CI 边界和冲突处理 |
-| `mcp-agent-e2e-designer` | 基于 DDD 读取 MCP 智能体项目代码，设计、保存、执行、诊断和 code-fix E2E usecase |
+| `mcp-agent-e2e-designer` | MCP 智能体 E2E 生命周期治理：代码发现、用例设计、提示确认、执行诊断、受控 code-fix 和基于证据的自我进化建议门禁 |
 | `user-flow-debug` | 通过 Dashboard UI 做真实用户流调试、截图留证、产物校验和受控修复 |
 
 ## This Is For You If
@@ -39,6 +39,8 @@
 ### Shared Agents
 
 通用 agent 源文件放在 `agents/*.md`。Claude Code 直接安装 Markdown agents；Codex 安装 `integrations/codex/agents/*.toml` 中的分发版本。
+
+`mcp-agent-e2e-designer` 保留历史名称作为兼容调用 id，但当前定位已经从单纯的 usecase designer 扩展为 MCP 智能体 E2E lifecycle governor。它不仅设计 E2E，还负责确认用户可见 prompt、从 MCP 边界执行、诊断失败、在允许时做最小 code-fix，并在每次 E2E 后基于过程和结果证据输出 self-evolution proposal report。进化建议必须等待用户确认后才可应用、持久化为 accepted，或上升为项目 profile / toolkit 规则。
 
 ### Portable Sandbox
 
