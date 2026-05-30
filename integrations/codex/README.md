@@ -21,6 +21,17 @@ cp /Users/wangyejing/github/agent-octopus-toolkit/integrations/codex/agents/*.to
 
 This does not replace existing Codex skills under `.codex/skills/`; it adds project-scoped agents under `.codex/agents/`.
 
+## mcp-agent-e2e-designer Notes
+
+`mcp-agent-e2e-designer` keeps its historical install name for compatibility, but its current role is broader than design. Treat it as an MCP intelligent-agent E2E lifecycle governor:
+
+- Discover the project profile from code/config before asking business questions.
+- Draft the user-visible E2E prompt and require explicit confirmation before runtime or MCP execution.
+- Execute from the MCP boundary first, then diagnose with HTTP/CLI/worker/filesystem only when the project profile allows it or when diagnosing an MCP-facing failure.
+- Apply code fixes only after a reproduced failing assertion or compile/startup failure, and only in the smallest owning module.
+- After each completed or failed E2E, produce a self-evolution proposal report from process/result evidence.
+- Stop after printing the proposal report and ask the user which candidates may be applied. Pending proposals must not be treated as accepted profile, use-case, or toolkit rules.
+
 ## user-flow-debug Notes
 
 `user-flow-debug` is intended for browser-level Dashboard validation, not API-only smoke testing. It discovers the runtime flow from the live Dashboard and loaded domain contract before acting:
