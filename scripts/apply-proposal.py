@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Review or accept an offline agent-octopus proposal package."""
+"""Review or accept an offline Octopus AgentOps proposal package."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def validate_relpath(relpath: str) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Review or accept an agent-octopus proposal")
+    parser = argparse.ArgumentParser(description="Review or accept an Octopus AgentOps proposal")
     parser.add_argument("proposal_dir")
     parser.add_argument("--toolkit-root", default=str(Path(__file__).resolve().parents[1]))
     parser.add_argument("--accept", action="store_true", help="Write proposed files into the toolkit")

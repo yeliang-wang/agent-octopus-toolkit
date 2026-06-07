@@ -86,7 +86,7 @@ def generate(check: bool) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Generate agent-octopus catalogs")
+    parser = argparse.ArgumentParser(description="Generate Octopus AgentOps catalogs")
     parser.add_argument("--check", action="store_true", help="Fail if generated catalogs differ")
     return parser
 

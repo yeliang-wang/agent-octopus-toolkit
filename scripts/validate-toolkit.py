@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate agent-octopus-toolkit product contracts.
+"""Validate Octopus AgentOps product contracts.
 
 The validator intentionally uses only Python's standard library so it can run
 before any project-specific dependency install. It checks the contract layer
@@ -290,7 +290,7 @@ def validate_all() -> list[str]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Validate agent-octopus-toolkit contracts")
+    parser = argparse.ArgumentParser(description="Validate Octopus AgentOps contracts")
     parser.add_argument("--json", action="store_true", help="Print machine-readable validation result")
     return parser
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lightweight control plane for agent-octopus-toolkit."""
+"""Control-plane CLI for Octopus AgentOps."""
 
 from __future__ import annotations
 
@@ -199,7 +199,7 @@ def cmd_proposals(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="agent-octopus lightweight control plane")
+    parser = argparse.ArgumentParser(description="Octopus AgentOps control plane")
     sub = parser.add_subparsers(dest="command", required=True)
 
     list_parser = sub.add_parser("list", help="List managed agents")

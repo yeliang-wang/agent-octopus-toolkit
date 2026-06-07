@@ -109,7 +109,7 @@ def run_eval() -> dict:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Evaluate agent-octopus agents")
+    parser = argparse.ArgumentParser(description="Evaluate Octopus AgentOps agents")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--out", default="")
     return parser

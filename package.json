@@ -1,7 +1,7 @@
 {
   "name": "agent-octopus-toolkit",
   "version": "1.0.0",
-  "description": "面向 Claude Code / Codex 的可复用 agent 工作流工具包。",
+  "description": "Production-oriented agent workflow platform for Claude Code and Codex.",
   "private": true,
   "scripts": {
     "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py scripts/generate-distributions.py scripts/generate-catalog.py scripts/evaluate-agents.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
@@ -18,7 +18,15 @@
     "type": "git",
     "url": "git+https://github.com/yeliang-wang/agent-octopus-toolkit.git"
   },
-  "keywords": [],
+  "keywords": [
+    "agentops",
+    "claude-code",
+    "codex",
+    "subagents",
+    "mcp",
+    "agent-workflows",
+    "ai-coding"
+  ],
   "author": "",
   "license": "UNLICENSED",
   "type": "commonjs",

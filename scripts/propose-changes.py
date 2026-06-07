@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Create an offline proposal package from installed agent edits.
+"""Create an offline Octopus AgentOps proposal package from installed agent edits.
 
-This script is meant to run from a project where agent-octopus-toolkit agents
+This script is meant to run from a project where Octopus AgentOps agents
 were installed. It does not require GitLab/GitHub permissions and does not
 write back into the toolkit source tree.
 """
@@ -96,7 +96,7 @@ def collect_claude(toolkit_root: Path, proposal_dir: Path) -> list[dict]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create an offline agent-octopus change proposal")
+    parser = argparse.ArgumentParser(description="Create an offline Octopus AgentOps change proposal")
     parser.add_argument("--tool", choices=["codex", "claude-code", "all"], default="codex")
     parser.add_argument("--project-root", default=".", help="Target project root for Codex installs")
     parser.add_argument("--toolkit-root", default=str(Path(__file__).resolve().parents[1]))
@@ -132,8 +132,8 @@ def main() -> int:
     write_text(proposal_dir / "manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
     write_text(
         proposal_dir / "README.md",
-        "# agent-octopus proposal\n\n"
-        "This package is a review proposal. It does not automatically update agent-octopus-toolkit.\n\n"
+        "# Octopus AgentOps proposal\n\n"
+        "This package is a review proposal. It does not automatically update the Octopus AgentOps source repository.\n\n"
         "Review with:\n\n"
         "```bash\n"
         "/path/to/agent-octopus-toolkit/scripts/apply-proposal.py /path/to/proposal\n"

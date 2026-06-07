@@ -1,8 +1,8 @@
-# agent 八爪鱼工具包：Claude Code Integration
+# Octopus AgentOps: Claude Code Integration
 
 Claude Code can use the Markdown agents in `agents/` directly because they use YAML frontmatter plus Markdown instructions.
 
-The product contract for each agent lives in `manifests/agents/<agent>.json`. Run `npm run validate` from the toolkit root before publishing updates.
+The product contract for each agent lives in `manifests/agents/<agent>.json`, and plugin packaging lives in `plugins/<plugin>/plugin.json`. Run `npm run validate` and `npm run eval` from the toolkit root before publishing updates.
 
 ## Install
 
@@ -34,7 +34,7 @@ cp /Users/wangyejing/github/agent-octopus-toolkit/agents/*.md ~/.claude/agents/
 
 ## Update
 
-After `agent-octopus-toolkit` is updated or a new version is released, run:
+After Octopus AgentOps is updated or a new version is released, run:
 
 ```bash
 /Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool claude-code --update

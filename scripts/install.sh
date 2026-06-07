@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install or update agent 八爪鱼工具包 agents for Claude Code and Codex.
+# Install or update Octopus AgentOps agents for Claude Code and Codex.
 #
 # Usage:
 #   ./scripts/install.sh [--tool claude-code|codex|all] [--agent <id>] [--dry-run] [--update] [--help]
@@ -33,7 +33,7 @@ DRY_RUN=0
 
 usage() {
   cat <<'EOF'
-Install or update agent 八爪鱼工具包 agents for Claude Code and Codex.
+Install or update Octopus AgentOps agents for Claude Code and Codex.
 
 Usage:
   ./scripts/install.sh [--tool claude-code|codex|all] [--agent <id>] [--dry-run] [--update] [--help]

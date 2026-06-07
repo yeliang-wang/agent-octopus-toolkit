@@ -1,10 +1,10 @@
-# agent 八爪鱼工具包：Codex Integration
+# Octopus AgentOps: Codex Integration
 
 Codex agents are installed as TOML files from `integrations/codex/agents/`.
 
-The canonical reusable agent source lives under the toolkit `agents/` directory. The TOML files here are Codex install/distribution variants.
+Canonical reusable agent sources live under `agents/`. The TOML files here are generated Codex distributions from those sources and `manifests/agents/*.json`.
 
-Each Codex agent must also be declared in `manifests/agents/<agent>.json`. Run `npm run validate` from the toolkit root before installing or updating downstream projects.
+Each Codex agent must be declared in `manifests/agents/<agent>.json` and assigned to a plugin in `plugins/<plugin>/plugin.json`. Run `npm run generate`, `npm run validate`, and `npm run eval` from the toolkit root before installing or updating downstream projects.
 
 Install them into a project-scoped `.codex/agents/` directory:
 
@@ -50,7 +50,7 @@ When the Dashboard renders role-based chat, the agent must record a step validat
 
 ## Update
 
-After `agent-octopus-toolkit` is updated or a new version is released, run the installer again from each target project root:
+After Octopus AgentOps is updated or a new version is released, run the installer again from each target project root:
 
 ```bash
 cd /path/to/your/project
