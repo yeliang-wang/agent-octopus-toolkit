@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-octopus-toolkit.local/schemas/eval-result.schema.json",
+  "title": "agent-octopus eval result",
+  "type": "object",
+  "required": ["schema", "suiteId", "status", "agentResults"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "const": "agent-octopus-eval/v1"
+    },
+    "suiteId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed"]
+    },
+    "agentResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["agentId", "status", "checks"],
+        "additionalProperties": true
+      }
+    }
+  }
+}

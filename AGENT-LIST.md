@@ -22,6 +22,17 @@
 
 运行 `npm run validate` 会校验 manifest、Markdown source、Codex distribution、README/AGENT-LIST 清单和关键章节。
 
+## Plugins
+
+| Plugin | Manifest | Agents |
+| --- | --- | --- |
+| git-workflow | `plugins/git-workflow/plugin.json` | `gitlab-sync` |
+| mcp-e2e-governance | `plugins/mcp-e2e-governance/plugin.json` | `mcp-agent-e2e-designer`, `user-flow-debug` |
+| production-soak | `plugins/production-soak/plugin.json` | `production-soak-governor` |
+| domainforge-fabric-lab | `plugins/domainforge-fabric-lab/plugin.json` | `domainforge-fabric-evolution-lab` |
+
+Generated catalogs live in `catalog/agents.json` and `catalog/plugins.json`.
+
 ## Shared Sandbox
 
 Agents should use `bin/octopus-sandbox` for repeatable OS-sensitive diagnostics instead of creating temporary scripts in the target agent workspace.

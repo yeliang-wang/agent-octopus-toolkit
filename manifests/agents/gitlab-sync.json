@@ -3,11 +3,27 @@
   "id": "gitlab-sync",
   "version": "1.0.0",
   "lifecycle": "beta",
+  "pluginId": "git-workflow",
+  "category": "scm-governance",
   "source": {
     "claudeMarkdown": "agents/gitlab-sync.md"
   },
   "distributions": {
     "codexToml": "integrations/codex/agents/gitlab-sync.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "git"
+    ],
+    "disallowedTools": [
+      "destructive-git-without-confirmation"
+    ],
+    "skills": [],
+    "memory": "project",
+    "hooks": [],
+    "allowedSpawnAgents": []
   },
   "purpose": "Safe GitLab-oriented repository synchronization, commit, push, merge request, CI, and conflict workflow governance.",
   "boundaries": {

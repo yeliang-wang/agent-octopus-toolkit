@@ -27,6 +27,15 @@
 | `production-soak-governor` | 通用 24h/长稳生产仿真治理：真实服务 readiness、数据清零、非 mock 预检、流量与生命周期挂起、30 分钟汇报、产品缺口阻断、代码升级/SCM/CI-CD 闭环和最终证据报告 |
 | `user-flow-debug` | 通过 Dashboard UI 做真实用户流调试、截图留证、产物校验和受控修复 |
 
+当前内置 plugin：
+
+| Plugin | Agents |
+| --- | --- |
+| `git-workflow` | `gitlab-sync` |
+| `mcp-e2e-governance` | `mcp-agent-e2e-designer`, `user-flow-debug` |
+| `production-soak` | `production-soak-governor` |
+| `domainforge-fabric-lab` | `domainforge-fabric-evolution-lab` |
+
 ## This Is For You If
 
 - 你在多个项目里反复复制同一套 Claude Code / Codex agent 指令。
@@ -40,9 +49,11 @@
 
 ### Shared Agents
 
-通用 agent 源文件放在 `agents/*.md`。Claude Code 直接安装 Markdown agents；Codex 安装 `integrations/codex/agents/*.toml` 中的分发版本。
+通用 agent 源文件放在 `agents/*.md`。Claude Code 直接安装 Markdown agents；Codex 安装由 `scripts/generate-distributions.py` 从 Markdown source 生成的 `integrations/codex/agents/*.toml` 分发版本。
 
 产品级契约放在 `manifests/agents/*.json`。每个 agent 必须声明 source/distribution 路径、生命周期、输入、输出、证据、确认门禁、危险动作和校验规则。`scripts/validate-toolkit.py` 会校验 manifest、Markdown frontmatter、Codex TOML、README/AGENT-LIST 清单和关键章节，避免只更新提示词而没有可审查契约。
+
+Plugin 契约放在 `plugins/<plugin>/plugin.json`，catalog 由 `scripts/generate-catalog.py` 生成到 `catalog/agents.json` 和 `catalog/plugins.json`。这让工具包可以按 plugin 搜索、安装和检查漂移。
 
 `mcp-agent-e2e-designer` 保留历史名称作为兼容调用 id，但当前定位已经从单纯的 usecase designer 扩展为 MCP 智能体 E2E lifecycle governor。它不仅设计 E2E，还负责确认用户可见 prompt、从 MCP 边界执行、诊断失败、在允许时做最小 code-fix，并在每次 E2E 后基于过程和结果证据输出 self-evolution proposal report。进化建议必须等待用户确认后才可应用、持久化为 accepted，或上升为项目 profile / toolkit 规则。
 
@@ -97,10 +108,13 @@ Codex agents 安装到目标项目的 `.codex/agents/`，不会覆盖 `.codex/sk
 
 ```bash
 npm run agents:list
+npm run plugins:list
+npm run agents:search -- mcp
+npm run agents:install -- --plugin mcp-e2e-governance --project-root /path/to/your/project
 npm run agents:codex-status -- --project-root /path/to/your/project
 ```
 
-它会从 manifest 读取 agent 版本、生命周期和分发路径，并检查目标项目 `.codex/agents/` 是否缺失或漂移。
+它会从 manifest/catalog 读取 agent 和 plugin 的版本、生命周期、能力、分发路径，并支持搜索、按 plugin 安装、列 proposal、检查目标项目 `.codex/agents/` 是否缺失或漂移。
 
 ## Problems It Solves
 
@@ -127,9 +141,13 @@ agent-octopus-toolkit
 │   └── codex/
 │       ├── README.md                Codex 使用说明
 │       └── agents/                  Codex TOML agents
+├── catalog/                         生成的 agent/plugin catalog
 ├── manifests/agents/                agent 产品契约
+├── plugins/                         plugin 产品契约
 ├── sandbox/octopus_sandbox.py       OS 敏感操作和可复用诊断实现
 ├── schemas/                         manifest / run / proposal schema
+├── scripts/generate-catalog.py       catalog 生成器
+├── scripts/generate-distributions.py Codex 分发生成器
 ├── scripts/install.sh               安装/更新脚本
 ├── scripts/octopus-control.py        轻量控制面 CLI
 ├── scripts/validate-toolkit.py       产品契约校验
@@ -219,6 +237,8 @@ npm run validate
 
 ```bash
 npm run agents:list
+npm run plugins:list
+npm run agents:search -- production
 npm run agents:codex-status -- --project-root /path/to/your/project
 ```
 
@@ -357,6 +377,18 @@ cd /path/to/your/project
 npm run check
 ```
 
+重新生成分发和 catalog：
+
+```bash
+npm run generate
+```
+
+运行 deterministic agent eval：
+
+```bash
+npm run eval
+```
+
 检查安装脚本：
 
 ```bash
@@ -383,6 +415,9 @@ python3 -m py_compile scripts/propose-changes.py scripts/apply-proposal.py
 agents/<agent>.md
 integrations/codex/agents/<agent>.toml
 manifests/agents/<agent>.json
+plugins/<plugin>/plugin.json
+catalog/agents.json
+catalog/plugins.json
 AGENT-LIST.md
 README.md
 ```
@@ -391,6 +426,7 @@ README.md
 
 ```bash
 npm run validate
+npm run eval
 /Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool codex --dry-run
 ```
 

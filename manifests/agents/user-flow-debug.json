@@ -3,11 +3,30 @@
   "id": "user-flow-debug",
   "version": "1.0.0",
   "lifecycle": "beta",
+  "pluginId": "mcp-e2e-governance",
+  "category": "dashboard-e2e",
   "source": {
     "claudeMarkdown": "agents/user-flow-debug.md"
   },
   "distributions": {
     "codexToml": "integrations/codex/agents/user-flow-debug.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "browser",
+      "filesystem"
+    ],
+    "disallowedTools": [
+      "direct-product-api-for-user-journey"
+    ],
+    "skills": [
+      "browser:control-in-app-browser"
+    ],
+    "memory": "project",
+    "hooks": [],
+    "allowedSpawnAgents": []
   },
   "purpose": "Real Dashboard user-flow debugging for agent applications with browser evidence, runtime-flow discovery, artifact validation, and controlled fixes.",
   "boundaries": {

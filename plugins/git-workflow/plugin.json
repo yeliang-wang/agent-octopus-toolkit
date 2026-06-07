@@ -1,0 +1,12 @@
+{
+  "schema": "agent-octopus-plugin/v1",
+  "id": "git-workflow",
+  "version": "1.0.0",
+  "lifecycle": "beta",
+  "category": "scm-governance",
+  "title": "Git Workflow",
+  "description": "Safe GitLab synchronization, commit, push, merge request, CI, and conflict workflow governance.",
+  "agents": ["gitlab-sync"],
+  "installTargets": ["claude-code", "codex"],
+  "qualityGates": ["manifest-validation", "distribution-generation", "install-roundtrip"]
+}

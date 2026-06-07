@@ -3,11 +3,38 @@
   "id": "domainforge-fabric-evolution-lab",
   "version": "1.0.0",
   "lifecycle": "experimental",
+  "pluginId": "domainforge-fabric-lab",
+  "category": "domainforge",
   "source": {
     "claudeMarkdown": "agents/domainforge-fabric-evolution-lab.md"
   },
   "distributions": {
     "codexToml": "integrations/codex/agents/domainforge-fabric-evolution-lab.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "browser",
+      "mcp",
+      "filesystem",
+      "scm"
+    ],
+    "disallowedTools": [
+      "production-customer-traffic",
+      "domains-source-mutation"
+    ],
+    "skills": [
+      "agency-software-architect",
+      "agency-evidence-collector"
+    ],
+    "memory": "project-and-user",
+    "hooks": [],
+    "allowedSpawnAgents": [
+      "mcp-agent-e2e-designer",
+      "user-flow-debug",
+      "production-soak-governor"
+    ]
   },
   "purpose": "DomainForge Fabric dev-stage production-closed-loop lab that rotates public materials, runs MCP E2E pressure, submits self-evolution evidence, and validates review closure.",
   "boundaries": {

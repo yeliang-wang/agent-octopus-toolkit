@@ -8,8 +8,11 @@
     "id",
     "version",
     "lifecycle",
+    "pluginId",
+    "category",
     "source",
     "distributions",
+    "native",
     "purpose",
     "boundaries",
     "inputs",
@@ -36,6 +39,14 @@
       "type": "string",
       "enum": ["experimental", "beta", "production-ready"]
     },
+    "pluginId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "category": {
+      "type": "string",
+      "minLength": 3
+    },
     "source": {
       "type": "object",
       "required": ["claudeMarkdown"],
@@ -55,6 +66,41 @@
         "codexToml": {
           "type": "string",
           "pattern": "^integrations/codex/agents/.*\\.toml$"
+        }
+      }
+    },
+    "native": {
+      "type": "object",
+      "required": ["model", "tools", "disallowedTools", "skills", "memory", "hooks", "allowedSpawnAgents"],
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tools": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "disallowedTools": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "memory": {
+          "type": "string",
+          "enum": ["none", "project", "user", "project-and-user"]
+        },
+        "hooks": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "allowedSpawnAgents": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
         }
       }
     },

@@ -3,11 +3,32 @@
   "id": "mcp-agent-e2e-designer",
   "version": "1.0.0",
   "lifecycle": "beta",
+  "pluginId": "mcp-e2e-governance",
+  "category": "mcp-e2e",
   "source": {
     "claudeMarkdown": "agents/mcp-agent-e2e-designer.md"
   },
   "distributions": {
     "codexToml": "integrations/codex/agents/mcp-agent-e2e-designer.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "mcp",
+      "filesystem"
+    ],
+    "disallowedTools": [
+      "runtime-execution-before-prompt-confirmation"
+    ],
+    "skills": [
+      "agency-software-architect"
+    ],
+    "memory": "project-and-user",
+    "hooks": [],
+    "allowedSpawnAgents": [
+      "user-flow-debug"
+    ]
   },
   "purpose": "MCP intelligent-agent E2E lifecycle governance from code-first discovery through prompt confirmation, execution, diagnosis, controlled fixes, and self-evolution proposals.",
   "boundaries": {

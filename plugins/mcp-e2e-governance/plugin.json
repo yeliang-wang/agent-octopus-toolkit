@@ -1,0 +1,12 @@
+{
+  "schema": "agent-octopus-plugin/v1",
+  "id": "mcp-e2e-governance",
+  "version": "1.0.0",
+  "lifecycle": "beta",
+  "category": "mcp-e2e",
+  "title": "MCP E2E Governance",
+  "description": "MCP intelligent-agent E2E lifecycle governance with prompt confirmation, assertion design, evidence, code-fix limits, and self-evolution proposal gates.",
+  "agents": ["mcp-agent-e2e-designer", "user-flow-debug"],
+  "installTargets": ["claude-code", "codex"],
+  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip"]
+}

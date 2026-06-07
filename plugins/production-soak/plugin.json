@@ -1,0 +1,12 @@
+{
+  "schema": "agent-octopus-plugin/v1",
+  "id": "production-soak",
+  "version": "1.0.0",
+  "lifecycle": "experimental",
+  "category": "production-validation",
+  "title": "Production Soak",
+  "description": "Generic production-like long-duration soak validation for agent products with real services, real external boundaries, periodic reports, and product-gap blocking.",
+  "agents": ["production-soak-governor"],
+  "installTargets": ["claude-code", "codex"],
+  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip"]
+}

@@ -3,11 +3,32 @@
   "id": "production-soak-governor",
   "version": "1.0.0",
   "lifecycle": "experimental",
+  "pluginId": "production-soak",
+  "category": "production-validation",
   "source": {
     "claudeMarkdown": "agents/production-soak-governor.md"
   },
   "distributions": {
     "codexToml": "integrations/codex/agents/production-soak-governor.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "filesystem",
+      "scm",
+      "ci"
+    ],
+    "disallowedTools": [
+      "mock-production-soak"
+    ],
+    "skills": [
+      "agency-evidence-collector",
+      "agency-software-architect"
+    ],
+    "memory": "project-and-user",
+    "hooks": [],
+    "allowedSpawnAgents": []
   },
   "purpose": "Generic production-like long-duration soak governance for agent products using real services, real external boundaries, periodic reporting, and product-gap blocking.",
   "boundaries": {

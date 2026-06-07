@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,9 +23,11 @@ except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback.
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_DIR = REPO_ROOT / "manifests" / "agents"
+PLUGIN_DIR = REPO_ROOT / "plugins"
 AGENTS_DIR = REPO_ROOT / "agents"
 CODEX_AGENT_DIR = REPO_ROOT / "integrations" / "codex" / "agents"
 SCHEMA_DIR = REPO_ROOT / "schemas"
+CATALOG_DIR = REPO_ROOT / "catalog"
 AGENT_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
@@ -114,6 +117,8 @@ def require(condition: bool, message: str) -> None:
 def validate_schema_files() -> None:
     required = [
         "agent-manifest.schema.json",
+        "eval-result.schema.json",
+        "plugin-manifest.schema.json",
         "proposal.schema.json",
         "run-summary.schema.json",
     ]
@@ -131,8 +136,11 @@ def validate_manifest_shape(path: Path, manifest: dict) -> None:
         "id",
         "version",
         "lifecycle",
+        "pluginId",
+        "category",
         "source",
         "distributions",
+        "native",
         "purpose",
         "boundaries",
         "inputs",
@@ -151,7 +159,14 @@ def validate_manifest_shape(path: Path, manifest: dict) -> None:
     require(path.name == f"{agent_id}.json", f"{rel(path)}: filename must match id")
     require(bool(VERSION_RE.match(manifest["version"])), f"{rel(path)}: invalid semantic version")
     require(manifest["lifecycle"] in {"experimental", "beta", "production-ready"}, f"{rel(path)}: invalid lifecycle")
+    require(bool(AGENT_ID_RE.match(manifest["pluginId"])), f"{rel(path)}: invalid pluginId")
+    require(isinstance(manifest["category"], str) and len(manifest["category"]) >= 3, f"{rel(path)}: category is required")
     require(len(manifest["purpose"]) >= 20, f"{rel(path)}: purpose is too short")
+
+    native = manifest["native"]
+    for key in ["model", "tools", "disallowedTools", "skills", "memory", "hooks", "allowedSpawnAgents"]:
+        require(key in native, f"{rel(path)}: native.{key} is required")
+    require(native["memory"] in {"none", "project", "user", "project-and-user"}, f"{rel(path)}: invalid native.memory")
 
     for list_key in ["inputs", "outputs", "evidence"]:
         value = manifest[list_key]
@@ -203,6 +218,48 @@ def validate_inventory(manifests: list[dict]) -> None:
         require(agent_id in readme, f"README.md: missing agent id {agent_id}")
 
 
+def validate_plugins(manifests: list[dict]) -> None:
+    manifest_ids = {manifest["id"] for manifest in manifests}
+    plugin_paths = sorted(PLUGIN_DIR.glob("*/plugin.json"))
+    require(plugin_paths, "plugins: no plugin manifests found")
+    plugin_ids: set[str] = set()
+    assigned_agents: set[str] = set()
+    for path in plugin_paths:
+        plugin = read_json(path)
+        for key in ["schema", "id", "version", "lifecycle", "category", "title", "description", "agents", "installTargets", "qualityGates"]:
+            require(key in plugin, f"{rel(path)}: missing required key {key}")
+        require(plugin["schema"] == "agent-octopus-plugin/v1", f"{rel(path)}: unsupported plugin schema")
+        require(path.parent.name == plugin["id"], f"{rel(path)}: plugin directory must match id")
+        require(plugin["id"] not in plugin_ids, f"{rel(path)}: duplicate plugin id {plugin['id']}")
+        plugin_ids.add(plugin["id"])
+        require(isinstance(plugin["agents"], list) and plugin["agents"], f"{rel(path)}: agents must be non-empty")
+        for agent_id in plugin["agents"]:
+            require(agent_id in manifest_ids, f"{rel(path)}: unknown agent id {agent_id}")
+            assigned_agents.add(agent_id)
+
+    for manifest in manifests:
+        require(manifest["pluginId"] in plugin_ids, f"manifests/agents/{manifest['id']}.json: unknown pluginId {manifest['pluginId']}")
+        require(manifest["id"] in assigned_agents, f"manifests/agents/{manifest['id']}.json: agent is not assigned to a plugin")
+
+
+def run_check(command: list[str], label: str) -> None:
+    completed = subprocess.run(command, cwd=REPO_ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if completed.returncode != 0:
+        detail = (completed.stdout + completed.stderr).strip()
+        raise ValidationError(f"{label} failed:\n{detail}")
+
+
+def validate_generated_outputs() -> None:
+    require((CATALOG_DIR / "agents.json").exists(), "catalog/agents.json: missing generated catalog")
+    require((CATALOG_DIR / "plugins.json").exists(), "catalog/plugins.json: missing generated catalog")
+    agent_catalog = read_json(CATALOG_DIR / "agents.json")
+    plugin_catalog = read_json(CATALOG_DIR / "plugins.json")
+    require(agent_catalog.get("schema") == "agent-octopus-agent-catalog/v1", "catalog/agents.json: invalid schema")
+    require(plugin_catalog.get("schema") == "agent-octopus-plugin-catalog/v1", "catalog/plugins.json: invalid schema")
+    run_check([sys.executable, "scripts/generate-distributions.py", "--check"], "distribution generation check")
+    run_check([sys.executable, "scripts/generate-catalog.py", "--check"], "catalog generation check")
+
+
 def validate_proposal_script_contract() -> None:
     script = (REPO_ROOT / "scripts" / "propose-changes.py").read_text(encoding="utf-8")
     require('"schema": "agent-octopus-proposal/v1"' in script, "scripts/propose-changes.py: proposal schema marker missing")
@@ -226,6 +283,8 @@ def validate_all() -> list[str]:
         manifests.append(manifest)
 
     validate_inventory(manifests)
+    validate_plugins(manifests)
+    validate_generated_outputs()
     validate_proposal_script_contract()
     return [manifest["id"] for manifest in manifests]
 

@@ -4,10 +4,15 @@
   "description": "面向 Claude Code / Codex 的可复用 agent 工作流工具包。",
   "private": true,
   "scripts": {
-    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
+    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py scripts/generate-distributions.py scripts/generate-catalog.py scripts/evaluate-agents.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
     "validate": "python3 scripts/validate-toolkit.py",
+    "generate": "python3 scripts/generate-distributions.py && python3 scripts/generate-catalog.py",
+    "eval": "python3 scripts/evaluate-agents.py",
     "agents:list": "python3 scripts/octopus-control.py list",
-    "agents:codex-status": "python3 scripts/octopus-control.py codex-status"
+    "plugins:list": "python3 scripts/octopus-control.py plugins",
+    "agents:search": "python3 scripts/octopus-control.py search",
+    "agents:codex-status": "python3 scripts/octopus-control.py codex-status",
+    "agents:install": "python3 scripts/octopus-control.py install"
   },
   "repository": {
     "type": "git",

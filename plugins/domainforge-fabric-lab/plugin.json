@@ -1,0 +1,12 @@
+{
+  "schema": "agent-octopus-plugin/v1",
+  "id": "domainforge-fabric-lab",
+  "version": "1.0.0",
+  "lifecycle": "experimental",
+  "category": "domainforge",
+  "title": "DomainForge Fabric Lab",
+  "description": "DomainForge Fabric dev-stage production-closed-loop lab with rotating public materials, MCP E2E pressure, self-evolution evidence, review closure, and long-run status artifacts.",
+  "agents": ["domainforge-fabric-evolution-lab"],
+  "installTargets": ["claude-code", "codex"],
+  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip"]
+}

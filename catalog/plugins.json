@@ -1,0 +1,131 @@
+{
+  "schema": "agent-octopus-plugin-catalog/v1",
+  "pluginCount": 4,
+  "plugins": [
+    {
+      "schema": "agent-octopus-plugin/v1",
+      "id": "domainforge-fabric-lab",
+      "version": "1.0.0",
+      "lifecycle": "experimental",
+      "category": "domainforge",
+      "title": "DomainForge Fabric Lab",
+      "description": "DomainForge Fabric dev-stage production-closed-loop lab with rotating public materials, MCP E2E pressure, self-evolution evidence, review closure, and long-run status artifacts.",
+      "agents": [
+        "domainforge-fabric-evolution-lab"
+      ],
+      "installTargets": [
+        "claude-code",
+        "codex"
+      ],
+      "qualityGates": [
+        "manifest-validation",
+        "distribution-generation",
+        "agent-eval",
+        "install-roundtrip"
+      ],
+      "agentCount": 1,
+      "agentSummaries": [
+        {
+          "id": "domainforge-fabric-evolution-lab",
+          "lifecycle": "experimental",
+          "category": "domainforge"
+        }
+      ]
+    },
+    {
+      "schema": "agent-octopus-plugin/v1",
+      "id": "git-workflow",
+      "version": "1.0.0",
+      "lifecycle": "beta",
+      "category": "scm-governance",
+      "title": "Git Workflow",
+      "description": "Safe GitLab synchronization, commit, push, merge request, CI, and conflict workflow governance.",
+      "agents": [
+        "gitlab-sync"
+      ],
+      "installTargets": [
+        "claude-code",
+        "codex"
+      ],
+      "qualityGates": [
+        "manifest-validation",
+        "distribution-generation",
+        "install-roundtrip"
+      ],
+      "agentCount": 1,
+      "agentSummaries": [
+        {
+          "id": "gitlab-sync",
+          "lifecycle": "beta",
+          "category": "scm-governance"
+        }
+      ]
+    },
+    {
+      "schema": "agent-octopus-plugin/v1",
+      "id": "mcp-e2e-governance",
+      "version": "1.0.0",
+      "lifecycle": "beta",
+      "category": "mcp-e2e",
+      "title": "MCP E2E Governance",
+      "description": "MCP intelligent-agent E2E lifecycle governance with prompt confirmation, assertion design, evidence, code-fix limits, and self-evolution proposal gates.",
+      "agents": [
+        "mcp-agent-e2e-designer",
+        "user-flow-debug"
+      ],
+      "installTargets": [
+        "claude-code",
+        "codex"
+      ],
+      "qualityGates": [
+        "manifest-validation",
+        "distribution-generation",
+        "agent-eval",
+        "install-roundtrip"
+      ],
+      "agentCount": 2,
+      "agentSummaries": [
+        {
+          "id": "mcp-agent-e2e-designer",
+          "lifecycle": "beta",
+          "category": "mcp-e2e"
+        },
+        {
+          "id": "user-flow-debug",
+          "lifecycle": "beta",
+          "category": "dashboard-e2e"
+        }
+      ]
+    },
+    {
+      "schema": "agent-octopus-plugin/v1",
+      "id": "production-soak",
+      "version": "1.0.0",
+      "lifecycle": "experimental",
+      "category": "production-validation",
+      "title": "Production Soak",
+      "description": "Generic production-like long-duration soak validation for agent products with real services, real external boundaries, periodic reports, and product-gap blocking.",
+      "agents": [
+        "production-soak-governor"
+      ],
+      "installTargets": [
+        "claude-code",
+        "codex"
+      ],
+      "qualityGates": [
+        "manifest-validation",
+        "distribution-generation",
+        "agent-eval",
+        "install-roundtrip"
+      ],
+      "agentCount": 1,
+      "agentSummaries": [
+        {
+          "id": "production-soak-governor",
+          "lifecycle": "experimental",
+          "category": "production-validation"
+        }
+      ]
+    }
+  ]
+}
