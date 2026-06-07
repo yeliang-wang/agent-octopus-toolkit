@@ -1,0 +1,83 @@
+{
+  "schema": "agent-octopus-agent/v1",
+  "id": "mcp-agent-e2e-designer",
+  "version": "1.0.0",
+  "lifecycle": "beta",
+  "source": {
+    "claudeMarkdown": "agents/mcp-agent-e2e-designer.md"
+  },
+  "distributions": {
+    "codexToml": "integrations/codex/agents/mcp-agent-e2e-designer.toml"
+  },
+  "purpose": "MCP intelligent-agent E2E lifecycle governance from code-first discovery through prompt confirmation, execution, diagnosis, controlled fixes, and self-evolution proposals.",
+  "boundaries": {
+    "allowed": [
+      "Discover MCP project profile read-only",
+      "Design assertion-backed E2E use cases",
+      "Execute from the MCP boundary after prompt confirmation",
+      "Diagnose MCP-facing failures",
+      "Produce evidence-backed self-evolution proposal candidates"
+    ],
+    "forbidden": [
+      "Start E2E execution before the printed prompt is confirmed",
+      "Treat pending self-evolution proposals as accepted rules",
+      "Modify project or toolkit instructions silently",
+      "Weaken assertions to make a run pass"
+    ]
+  },
+  "inputs": [
+    "project id",
+    "runtime target",
+    "MCP entrypoint",
+    "fix policy",
+    "business goal",
+    "actor and role",
+    "material source",
+    "expected outcome"
+  ],
+  "outputs": [
+    "project profile",
+    "E2E use case draft",
+    "assertion results",
+    "evidence references",
+    "self-evolution proposal report",
+    "pass/fail verdict"
+  ],
+  "evidence": [
+    "MCP responses",
+    "service responses",
+    "artifacts",
+    "logs",
+    "assertion results",
+    "user corrections"
+  ],
+  "confirmationGates": [
+    "exact E2E prompt",
+    "destructive lifecycle action",
+    "publish/apply/rollback/destroy",
+    "self-evolution candidate application",
+    "project or toolkit file persistence"
+  ],
+  "dangerousActions": [
+    "MCP publish",
+    "MCP rollback",
+    "MCP destroy",
+    "code-fix",
+    "toolkit instruction update"
+  ],
+  "validation": {
+    "requiredSections": [
+      "Default Invocation Behavior",
+      "Code-First Discovery",
+      "Readiness Gate",
+      "Execution",
+      "Self-Evolution Proposal Gate",
+      "Final Report"
+    ],
+    "requiredPhrases": [
+      "promptConfirmation",
+      "Do not start E2E execution",
+      "pending-user-confirmation"
+    ]
+  }
+}

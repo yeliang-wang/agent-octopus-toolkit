@@ -1,0 +1,85 @@
+{
+  "schema": "agent-octopus-agent/v1",
+  "id": "user-flow-debug",
+  "version": "1.0.0",
+  "lifecycle": "beta",
+  "source": {
+    "claudeMarkdown": "agents/user-flow-debug.md"
+  },
+  "distributions": {
+    "codexToml": "integrations/codex/agents/user-flow-debug.toml"
+  },
+  "purpose": "Real Dashboard user-flow debugging for agent applications with browser evidence, runtime-flow discovery, artifact validation, and controlled fixes.",
+  "boundaries": {
+    "allowed": [
+      "Operate the specified Dashboard entry UI",
+      "Classify runtime flow from visible UI and runtime contract",
+      "Capture screenshots and artifacts",
+      "Diagnose smallest failing runtime boundary",
+      "Apply fixes only under the selected fix policy"
+    ],
+    "forbidden": [
+      "Bypass the product UI for normal user journey execution",
+      "Invent business content or fake artifacts",
+      "Escalate from diagnosis to code changes silently",
+      "Create ad hoc diagnostic scripts in target workspaces"
+    ]
+  },
+  "inputs": [
+    "run target",
+    "domain id",
+    "scenario id or name",
+    "Dashboard entry UI",
+    "attachment policy",
+    "Dashboard URL or local ports",
+    "MCP/JDBC mode",
+    "run mode",
+    "screenshot directory",
+    "fix policy"
+  ],
+  "outputs": [
+    "Dashboard route tested",
+    "run id",
+    "screenshot directory",
+    "artifact summary",
+    "runtime flow type",
+    "step validation matrix",
+    "fix summary"
+  ],
+  "evidence": [
+    "browser screenshots",
+    "runtime responses",
+    "artifact files",
+    "logs",
+    "sandbox health-check",
+    "sandbox find-artifacts"
+  ],
+  "confirmationGates": [
+    "missing entry UI",
+    "ambiguous runtime flow",
+    "runtime-fix",
+    "code-fix",
+    "module-update",
+    "internal tick API"
+  ],
+  "dangerousActions": [
+    "deployed module update",
+    "runtime restart",
+    "code modification",
+    "internal scheduler tick"
+  ],
+  "validation": {
+    "requiredSections": [
+      "Required Inputs",
+      "Runtime Flow Discovery",
+      "Non-Negotiable Rules",
+      "Workflow",
+      "Final Report"
+    ],
+    "requiredPhrases": [
+      "Use real Dashboard UI browser automation",
+      "Runtime flow type",
+      "Do not create temporary Python diagnostic files"
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "agent-octopus-agent/v1",
+  "id": "gitlab-sync",
+  "version": "1.0.0",
+  "lifecycle": "beta",
+  "source": {
+    "claudeMarkdown": "agents/gitlab-sync.md"
+  },
+  "distributions": {
+    "codexToml": "integrations/codex/agents/gitlab-sync.toml"
+  },
+  "purpose": "Safe GitLab-oriented repository synchronization, commit, push, merge request, CI, and conflict workflow governance.",
+  "boundaries": {
+    "allowed": [
+      "Inspect git repository state",
+      "Fetch and merge remote branches",
+      "Stage and commit intentional local changes",
+      "Push only when requested or clearly implied",
+      "Diagnose GitLab CI and merge request state"
+    ],
+    "forbidden": [
+      "Discard local work without explicit approval",
+      "Force push without explicit approval",
+      "Push directly to protected base branches without explicit approval",
+      "Bypass hooks without explicit approval"
+    ]
+  },
+  "inputs": [
+    "target branch",
+    "sync direction",
+    "local change policy",
+    "divergence policy"
+  ],
+  "outputs": [
+    "repository inspection summary",
+    "sync result",
+    "commit and push summary",
+    "CI or merge request status"
+  ],
+  "evidence": [
+    "git status",
+    "git log",
+    "sandbox git-inspect",
+    "sandbox git-commit-check",
+    "sandbox git-conflicts"
+  ],
+  "confirmationGates": [
+    "protected branch push",
+    "force push",
+    "destructive git commands",
+    "branch ambiguity"
+  ],
+  "dangerousActions": [
+    "git reset --hard",
+    "git checkout -- <file>",
+    "git clean",
+    "git push --force",
+    "branch deletion"
+  ],
+  "validation": {
+    "requiredSections": [
+      "Defaults",
+      "Branch And MR Discipline",
+      "Required Confirmations",
+      "Standard Inspection",
+      "Final Report"
+    ],
+    "requiredPhrases": [
+      "octopus-sandbox",
+      "Never run `git reset --hard`",
+      "Push only when requested"
+    ]
+  }
+}

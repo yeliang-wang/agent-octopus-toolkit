@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-octopus-toolkit.local/schemas/agent-manifest.schema.json",
+  "title": "agent-octopus agent manifest",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "version",
+    "lifecycle",
+    "source",
+    "distributions",
+    "purpose",
+    "boundaries",
+    "inputs",
+    "outputs",
+    "evidence",
+    "confirmationGates",
+    "dangerousActions",
+    "validation"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "agent-octopus-agent/v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "lifecycle": {
+      "type": "string",
+      "enum": ["experimental", "beta", "production-ready"]
+    },
+    "source": {
+      "type": "object",
+      "required": ["claudeMarkdown"],
+      "additionalProperties": false,
+      "properties": {
+        "claudeMarkdown": {
+          "type": "string",
+          "pattern": "^agents/.*\\.md$"
+        }
+      }
+    },
+    "distributions": {
+      "type": "object",
+      "required": ["codexToml"],
+      "additionalProperties": false,
+      "properties": {
+        "codexToml": {
+          "type": "string",
+          "pattern": "^integrations/codex/agents/.*\\.toml$"
+        }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20
+    },
+    "boundaries": {
+      "type": "object",
+      "required": ["allowed", "forbidden"],
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "forbidden": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 3 }
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "confirmationGates": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "dangerousActions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "validation": {
+      "type": "object",
+      "required": ["requiredSections", "requiredPhrases"],
+      "additionalProperties": false,
+      "properties": {
+        "requiredSections": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "requiredPhrases": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 3 }
+        }
+      }
+    }
+  }
+}

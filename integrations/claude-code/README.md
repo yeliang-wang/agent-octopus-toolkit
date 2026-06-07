@@ -2,6 +2,8 @@
 
 Claude Code can use the Markdown agents in `agents/` directly because they use YAML frontmatter plus Markdown instructions.
 
+The product contract for each agent lives in `manifests/agents/<agent>.json`. Run `npm run validate` from the toolkit root before publishing updates.
+
 ## Install
 
 ```bash

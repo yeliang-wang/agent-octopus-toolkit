@@ -1,0 +1,91 @@
+{
+  "schema": "agent-octopus-agent/v1",
+  "id": "domainforge-fabric-evolution-lab",
+  "version": "1.0.0",
+  "lifecycle": "experimental",
+  "source": {
+    "claudeMarkdown": "agents/domainforge-fabric-evolution-lab.md"
+  },
+  "distributions": {
+    "codexToml": "integrations/codex/agents/domainforge-fabric-evolution-lab.toml"
+  },
+  "purpose": "DomainForge Fabric dev-stage production-closed-loop lab that rotates public materials, runs MCP E2E pressure, submits self-evolution evidence, and validates review closure.",
+  "boundaries": {
+    "allowed": [
+      "Operate as an external lab agent",
+      "Use DomainForge MCP and self-evolution product boundaries",
+      "Maintain toolkit-managed lab storage",
+      "Trigger self-evolution evidence submission",
+      "Simulate production user review closure"
+    ],
+    "forbidden": [
+      "Become part of the DomainForge production runtime",
+      "Modify domains business assets",
+      "Merge GitLab merge requests",
+      "Publish lifecycle changes without explicit confirmation",
+      "Use production customer traffic"
+    ]
+  },
+  "inputs": [
+    "domainforge root",
+    "runtime target",
+    "MCP endpoint",
+    "service health URL",
+    "self-evolution URL",
+    "material paths or public material authorization",
+    "scenario goal",
+    "publish policy",
+    "fix policy"
+  ],
+  "outputs": [
+    "current status file",
+    "latest run link",
+    "run summary",
+    "MCP results",
+    "self-evolution run",
+    "user-flow results",
+    "screenshots",
+    "report"
+  ],
+  "evidence": [
+    "MCP calls",
+    "service responses",
+    "execution traces",
+    "LLM traces",
+    "review screenshots",
+    "self-evolution EvidenceBundle",
+    "EvolutionOpportunity",
+    "EvolutionPlan"
+  ],
+  "confirmationGates": [
+    "public material authorization",
+    "GitLab MR creation",
+    "publish",
+    "rollback",
+    "destroy",
+    "source mutation"
+  ],
+  "dangerousActions": [
+    "GitLab MR creation",
+    "lifecycle publish",
+    "lifecycle rollback",
+    "lifecycle destroy",
+    "source code mutation"
+  ],
+  "validation": {
+    "requiredSections": [
+      "Core Boundary",
+      "Business Domain Boundary",
+      "Persistent Chat Reporting",
+      "Required Production-Closed-Loop Readiness",
+      "Standard Workflow",
+      "Safety Rules",
+      "Final Response Shape"
+    ],
+    "requiredPhrases": [
+      "BLOCKED: fabric is not production-closed-loop ready",
+      "current-status.md",
+      "Do not use this lab agent against production customer traffic"
+    ]
+  }
+}

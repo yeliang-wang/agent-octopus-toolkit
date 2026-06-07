@@ -4,7 +4,10 @@
   "description": "面向 Claude Code / Codex 的可复用 agent 工作流工具包。",
   "private": true,
   "scripts": {
-    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py && bash -n scripts/install.sh"
+    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
+    "validate": "python3 scripts/validate-toolkit.py",
+    "agents:list": "python3 scripts/octopus-control.py list",
+    "agents:codex-status": "python3 scripts/octopus-control.py codex-status"
   },
   "repository": {
     "type": "git",

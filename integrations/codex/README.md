@@ -4,6 +4,8 @@ Codex agents are installed as TOML files from `integrations/codex/agents/`.
 
 The canonical reusable agent source lives under the toolkit `agents/` directory. The TOML files here are Codex install/distribution variants.
 
+Each Codex agent must also be declared in `manifests/agents/<agent>.json`. Run `npm run validate` from the toolkit root before installing or updating downstream projects.
+
 Install them into a project-scoped `.codex/agents/` directory:
 
 ```bash
@@ -56,3 +58,10 @@ cd /path/to/your/project
 ```
 
 The update is project-scoped and overwrites toolkit agents with the latest files from `integrations/codex/agents/`.
+
+Dry-run a project-scoped update without writing files:
+
+```bash
+cd /path/to/your/project
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool codex --update --dry-run
+```

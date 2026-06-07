@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agent-octopus-toolkit.local/schemas/run-summary.schema.json",
+  "title": "agent-octopus run summary",
+  "type": "object",
+  "required": ["schema", "runId", "agentId", "status", "startedAt", "evidence"],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "const": "agent-octopus-run/v1"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "running", "succeeded", "failed", "blocked", "cancelled"]
+    },
+    "startedAt": {
+      "type": "string"
+    },
+    "finishedAt": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "ref"],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

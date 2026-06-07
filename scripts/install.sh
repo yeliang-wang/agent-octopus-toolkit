@@ -3,7 +3,7 @@
 # Install or update agent 八爪鱼工具包 agents for Claude Code and Codex.
 #
 # Usage:
-#   ./scripts/install.sh [--tool claude-code|codex|all] [--update] [--help]
+#   ./scripts/install.sh [--tool claude-code|codex|all] [--agent <id>] [--dry-run] [--update] [--help]
 
 set -euo pipefail
 
@@ -28,13 +28,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TOOL="all"
 ACTION="install"
+AGENT_FILTER=""
+DRY_RUN=0
 
 usage() {
   cat <<'EOF'
 Install or update agent 八爪鱼工具包 agents for Claude Code and Codex.
 
 Usage:
-  ./scripts/install.sh [--tool claude-code|codex|all] [--update] [--help]
+  ./scripts/install.sh [--tool claude-code|codex|all] [--agent <id>] [--dry-run] [--update] [--help]
 EOF
 }
 
@@ -44,6 +46,15 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 ]] || { err "--tool requires a value"; exit 1; }
       TOOL="$2"
       shift 2
+      ;;
+    --agent)
+      [[ $# -ge 2 ]] || { err "--agent requires a value"; exit 1; }
+      AGENT_FILTER="$2"
+      shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
       ;;
     --help|-h)
       usage
@@ -61,20 +72,43 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+copy_agent_file() {
+  local src="$1"
+  local dest="$2"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf "[DRY-RUN] cp %s %s\n" "$src" "$dest"
+  else
+    cp "$src" "$dest"
+  fi
+}
+
+matches_agent_filter() {
+  local file="$1"
+  if [[ -z "$AGENT_FILTER" ]]; then
+    return 0
+  fi
+  [[ "$(basename "$file")" == "$AGENT_FILTER".* ]]
+}
+
 install_claude_code() {
   local src="$REPO_ROOT/agents"
   local dest="${HOME}/.claude/agents"
   local count=0
 
   [[ -d "$src" ]] || { err "agents/ not found: $src"; return 1; }
-  mkdir -p "$dest"
+  [[ "$DRY_RUN" -eq 1 ]] || mkdir -p "$dest"
 
   local f
   while IFS= read -r -d '' f; do
-    cp "$f" "$dest/"
+    matches_agent_filter "$f" || continue
+    copy_agent_file "$f" "$dest/"
     count=$((count + 1))
   done < <(find "$src" -maxdepth 1 -type f -name "*.md" -print0)
 
+  if [[ -n "$AGENT_FILTER" && "$count" -eq 0 ]]; then
+    err "Claude Code agent not found: $AGENT_FILTER"
+    return 1
+  fi
   ok "Claude Code: $count agents $(action_label) -> $dest"
   ok "Sandbox: $REPO_ROOT/bin/octopus-sandbox"
 }
@@ -85,14 +119,19 @@ install_codex() {
   local count=0
 
   [[ -d "$src" ]] || { err "Codex agents not found: $src"; return 1; }
-  mkdir -p "$dest"
+  [[ "$DRY_RUN" -eq 1 ]] || mkdir -p "$dest"
 
   local f
   while IFS= read -r -d '' f; do
-    cp "$f" "$dest/"
+    matches_agent_filter "$f" || continue
+    copy_agent_file "$f" "$dest/"
     count=$((count + 1))
   done < <(find "$src" -maxdepth 1 -type f -name "*.toml" -print0)
 
+  if [[ -n "$AGENT_FILTER" && "$count" -eq 0 ]]; then
+    err "Codex agent not found: $AGENT_FILTER"
+    return 1
+  fi
   ok "Codex: $count agents $(action_label) -> $dest"
   ok "Sandbox: $REPO_ROOT/bin/octopus-sandbox"
   warn "Codex install is project-scoped; run this command from the target project root."
