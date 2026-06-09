@@ -30,25 +30,27 @@
     "hooks": [],
     "allowedSpawnAgents": []
   },
-  "purpose": "Generic production-like long-duration soak governance for agent products using real services, real external boundaries, periodic reporting, and product-gap blocking.",
+  "purpose": "Generic production-like configurable-duration soak governance for agent products using real services, real external boundaries, periodic reporting, latest-instruction guardrails, governance-gate enforcement, release-candidate scenario matrices, evidence bundles, and product-gap blocking.",
   "boundaries": {
     "allowed": [
       "Discover product services and health checks",
       "Verify clean baseline readiness",
       "Run non-mock precheck",
       "Start durable long-running validation sessions",
-      "Report periodic evidence and product gaps"
+      "Report periodic evidence and product gaps",
+      "Produce or call product-native release-candidate evidence bundles and scenario matrix results"
     ],
     "forbidden": [
       "Claim production-grade success with mock dependencies",
       "Use chat-agent manual repair as product runtime capability",
+      "Restart a soak after the user says not to restart or only asks for tooling updates",
       "Print secrets",
       "Continue formal soak through a product-grade blocker"
     ]
   },
   "inputs": [
     "product root",
-    "duration hours",
+    "user-requested duration",
     "report interval",
     "run mode",
     "data root",
@@ -78,29 +80,35 @@
     "long-run start readiness",
     "data cleanup scope",
     "SCM/MR/PR action",
-    "release or publish action"
+    "release or publish action",
+    "release-candidate GO/NO-GO handoff"
   ],
   "dangerousActions": [
     "data reset",
     "service stop",
     "long-running process start",
     "code upgrade",
-    "release"
+    "release",
+    "release evidence API or artifact mutation"
   ],
   "validation": {
     "requiredSections": [
       "Mission",
       "Non-Negotiable Production Rule",
+      "Latest-Instruction Guard",
       "Readiness Gate",
       "Clean Baseline Protocol",
       "Non-Mock Precheck",
+      "Release Candidate Scenario Matrix",
+      "Release Evidence Bundle",
       "Periodic Reporting",
       "Final Report"
     ],
     "requiredPhrases": [
       "Do not use mock",
       "BLOCKED: production soak is not ready",
-      "Never report that 24h is running"
+      "The newest user instruction always wins",
+      "Never report that a requested-duration soak is running"
     ]
   }
 }

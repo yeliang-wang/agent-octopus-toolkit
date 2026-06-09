@@ -104,9 +104,10 @@
       "lifecycle": "experimental",
       "category": "production-validation",
       "title": "Production Soak",
-      "description": "Generic production-like long-duration soak validation for agent products with real services, real external boundaries, periodic reports, and product-gap blocking.",
+      "description": "Generic production-like long-duration soak validation and production release readiness governance for agent products with real services, real external boundaries, periodic reports, product-gap blocking, evidence bundles, and GO/NO-GO decisions.",
       "agents": [
-        "production-soak-governor"
+        "production-soak-governor",
+        "production-release-governor"
       ],
       "installTargets": [
         "claude-code",
@@ -118,8 +119,13 @@
         "agent-eval",
         "install-roundtrip"
       ],
-      "agentCount": 1,
+      "agentCount": 2,
       "agentSummaries": [
+        {
+          "id": "production-release-governor",
+          "lifecycle": "experimental",
+          "category": "production-release"
+        },
         {
           "id": "production-soak-governor",
           "lifecycle": "experimental",

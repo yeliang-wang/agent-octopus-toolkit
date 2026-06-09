@@ -1,0 +1,121 @@
+{
+  "schema": "agent-octopus-agent/v1",
+  "id": "production-release-governor",
+  "version": "1.0.0",
+  "lifecycle": "experimental",
+  "pluginId": "production-soak",
+  "category": "production-release",
+  "source": {
+    "claudeMarkdown": "agents/production-release-governor.md"
+  },
+  "distributions": {
+    "codexToml": "integrations/codex/agents/production-release-governor.toml"
+  },
+  "native": {
+    "model": "default",
+    "tools": [
+      "shell",
+      "filesystem",
+      "scm",
+      "ci"
+    ],
+    "disallowedTools": [
+      "mock-production-release"
+    ],
+    "skills": [
+      "agency-code-reviewer",
+      "agency-evidence-collector",
+      "agency-software-architect"
+    ],
+    "memory": "project-and-user",
+    "hooks": [],
+    "allowedSpawnAgents": [
+      "production-soak-governor",
+      "gitlab-sync"
+    ]
+  },
+  "purpose": "Production release readiness governance for agent products using real soak evidence, security, approval, rollback, observability, scenario matrix, risk register, and GO/NO-GO decisions.",
+  "boundaries": {
+    "allowed": [
+      "Audit release candidate evidence",
+      "Verify real soak, SCM, CI/CD, LLM, approval, rollback, and observability proof",
+      "Produce GO, CONDITIONAL-GO, or NO-GO decisions",
+      "Classify production release risks"
+    ],
+    "forbidden": [
+      "Approve release with mock evidence",
+      "Use chat-agent manual repair as production runtime capability",
+      "Print secrets",
+      "Merge, deploy, tag, clear data, or start soak without explicit user request"
+    ]
+  },
+  "inputs": [
+    "product root",
+    "release candidate",
+    "soak evidence",
+    "product-native release evidence API or release evidence bundle",
+    "service inventory",
+    "connected projects",
+    "security evidence",
+    "approval evidence",
+    "rollback evidence",
+    "observability evidence",
+    "scenario matrix"
+  ],
+  "outputs": [
+    "release readiness checklist",
+    "scenario matrix result",
+    "risk register",
+    "must-fix list",
+    "gray release conditions",
+    "GO/CONDITIONAL-GO/NO-GO decision"
+  ],
+  "evidence": [
+    "source status",
+    "release candidate commit or tag",
+    "soak report",
+    "product-native release evidence API response",
+    "health checks",
+    "LLM trace/provider/model",
+    "SCM branch or MR/PR",
+    "CI/CD job status",
+    "approval and audit records",
+    "rollback proof",
+    "observability dashboards and alerts"
+  ],
+  "confirmationGates": [
+    "release decision",
+    "merge action",
+    "deployment action",
+    "tag or publish action",
+    "data mutation"
+  ],
+  "dangerousActions": [
+    "release",
+    "deployment",
+    "merge",
+    "tag",
+    "rollback",
+    "data reset"
+  ],
+  "validation": {
+    "requiredSections": [
+      "Mission",
+      "Non-Negotiable Release Rule",
+      "Inputs To Discover Or Collect",
+      "Release Readiness Checklist",
+      "Scenario Matrix",
+      "GO / NO-GO Criteria",
+      "Review Workflow",
+      "Final Report",
+      "Risk Register",
+      "Output Shape"
+    ],
+    "requiredPhrases": [
+      "Do not use mock",
+      "GO",
+      "CONDITIONAL-GO",
+      "NO-GO"
+    ]
+  }
+}

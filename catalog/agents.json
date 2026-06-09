@@ -1,6 +1,6 @@
 {
   "schema": "agent-octopus-agent-catalog/v1",
-  "agentCount": 5,
+  "agentCount": 6,
   "agents": [
     {
       "id": "domainforge-fabric-evolution-lab",
@@ -199,13 +199,87 @@
       ]
     },
     {
+      "id": "production-release-governor",
+      "version": "1.0.0",
+      "lifecycle": "experimental",
+      "pluginId": "production-soak",
+      "pluginTitle": "Production Soak",
+      "category": "production-release",
+      "purpose": "Production release readiness governance for agent products using real soak evidence, security, approval, rollback, observability, scenario matrix, risk register, and GO/NO-GO decisions.",
+      "source": {
+        "claudeMarkdown": "agents/production-release-governor.md"
+      },
+      "distributions": {
+        "codexToml": "integrations/codex/agents/production-release-governor.toml"
+      },
+      "native": {
+        "model": "default",
+        "tools": [
+          "shell",
+          "filesystem",
+          "scm",
+          "ci"
+        ],
+        "disallowedTools": [
+          "mock-production-release"
+        ],
+        "skills": [
+          "agency-code-reviewer",
+          "agency-evidence-collector",
+          "agency-software-architect"
+        ],
+        "memory": "project-and-user",
+        "hooks": [],
+        "allowedSpawnAgents": [
+          "production-soak-governor",
+          "gitlab-sync"
+        ]
+      },
+      "inputs": [
+        "product root",
+        "release candidate",
+        "soak evidence",
+        "product-native release evidence API or release evidence bundle",
+        "service inventory",
+        "connected projects",
+        "security evidence",
+        "approval evidence",
+        "rollback evidence",
+        "observability evidence",
+        "scenario matrix"
+      ],
+      "outputs": [
+        "release readiness checklist",
+        "scenario matrix result",
+        "risk register",
+        "must-fix list",
+        "gray release conditions",
+        "GO/CONDITIONAL-GO/NO-GO decision"
+      ],
+      "confirmationGates": [
+        "release decision",
+        "merge action",
+        "deployment action",
+        "tag or publish action",
+        "data mutation"
+      ],
+      "dangerousActions": [
+        "release",
+        "deployment",
+        "merge",
+        "tag",
+        "rollback",
+        "data reset"
+      ]
+    },
+    {
       "id": "production-soak-governor",
       "version": "1.0.0",
       "lifecycle": "experimental",
       "pluginId": "production-soak",
       "pluginTitle": "Production Soak",
       "category": "production-validation",
-      "purpose": "Generic production-like long-duration soak governance for agent products using real services, real external boundaries, periodic reporting, and product-gap blocking.",
+      "purpose": "Generic production-like configurable-duration soak governance for agent products using real services, real external boundaries, periodic reporting, latest-instruction guardrails, governance-gate enforcement, release-candidate scenario matrices, evidence bundles, and product-gap blocking.",
       "source": {
         "claudeMarkdown": "agents/production-soak-governor.md"
       },
@@ -233,7 +307,7 @@
       },
       "inputs": [
         "product root",
-        "duration hours",
+        "user-requested duration",
         "report interval",
         "run mode",
         "data root",
@@ -255,14 +329,16 @@
         "long-run start readiness",
         "data cleanup scope",
         "SCM/MR/PR action",
-        "release or publish action"
+        "release or publish action",
+        "release-candidate GO/NO-GO handoff"
       ],
       "dangerousActions": [
         "data reset",
         "service stop",
         "long-running process start",
         "code upgrade",
-        "release"
+        "release",
+        "release evidence API or artifact mutation"
       ]
     },
     {
