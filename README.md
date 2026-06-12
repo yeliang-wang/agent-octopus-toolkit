@@ -26,9 +26,9 @@ The product goal is simple: manage agent operations as reusable product assets, 
 
 | Agent | Purpose |
 | --- | --- |
-| `domainforge-fabric-evolution-lab` | DomainForge Fabric production-closed-loop lab for rotating materials, MCP E2E pressure, review closure, and self-evolution evidence. |
-| `gitlab-sync` | GitLab synchronization, commit, push, MR/CI boundaries, and conflict handling. |
-| `mcp-agent-e2e-designer` | MCP intelligent-agent E2E lifecycle governor: discovery, prompt confirmation, execution, diagnosis, controlled code-fix, and evidence-backed self-evolution proposals. |
+| `product-evolution-lab` | Generic product evolution lab for authorized materials, product E2E pressure, improvement evidence, review closure, and goal-driven loops. |
+| `scm-sync-governor` | SCM synchronization, commit, push, PR/MR/CI boundaries, and conflict handling. |
+| `mcp-e2e-governor` | MCP intelligent-agent E2E lifecycle governor: discovery, prompt confirmation, execution, diagnosis, controlled code-fix, and evidence-backed self-evolution proposals. |
 | `production-lifecycle-governor` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, evolution delivery, release evidence, scenario matrix, risk register, and GO/NO-GO decisions. |
 | `user-flow-debug` | Real Dashboard user-flow debugging with runtime-flow discovery, screenshots, artifacts, role validation, diagnosis, and controlled fixes. |
 
@@ -36,10 +36,10 @@ The product goal is simple: manage agent operations as reusable product assets, 
 
 | Plugin | Agents |
 | --- | --- |
-| `git-workflow` | `gitlab-sync` |
-| `mcp-e2e-governance` | `mcp-agent-e2e-designer`, `user-flow-debug` |
+| `git-workflow` | `scm-sync-governor` |
+| `mcp-e2e-governance` | `mcp-e2e-governor`, `user-flow-debug` |
 | `production-lifecycle` | `production-lifecycle-governor` |
-| `domainforge-fabric-lab` | `domainforge-fabric-evolution-lab` |
+| `product-evolution-lab` | `product-evolution-lab` |
 
 ## Who It Is For
 
@@ -71,9 +71,9 @@ Plugin contracts live in `plugins/<plugin>/plugin.json`. `scripts/generate-catal
 
 OS-sensitive checks are centralized in `bin/octopus-sandbox` and `sandbox/octopus_sandbox.py`, so installed agents avoid project-local temporary scripts and optional command dependencies.
 
-### Git And CI Guardrails
+### SCM And CI Guardrails
 
-`gitlab-sync` separates branch selection, sync, commit, push, merge requests, CI diagnosis, and conflict handling so high-risk Git actions are explicit and auditable.
+`scm-sync-governor` separates branch selection, sync, commit, push, pull requests or merge requests, CI diagnosis, and conflict handling so high-risk Git actions are explicit and auditable.
 
 ### Real User Flow Debugging
 
@@ -90,9 +90,15 @@ time-driven 测试遵守生产边界：Dashboard UI 不应出现 tick/debug 控�
 
 `user-flow-debug` 还会在支持 role profile 的聊天页面中校验每个 step 的显示说话人是否来自该 step 的 owner role；默认 assistant/colleague 只应出现在开场或无 step 消息中。
 
-### MCP E2E And Production Lifecycle Governance
+### Goal-Driven Loop Agents
 
-`mcp-agent-e2e-designer` governs MCP product journeys from code-first discovery to prompt confirmation, execution, assertions, diagnosis, and self-evolution proposal gating.
+Every packaged subagent supports a `Goal-Driven Loop Mode`: the user supplies a goal, loop cadence, stop condition, and policy boundaries; the agent iterates with explicit `loopState`, per-iteration evidence, blockers, and next actions. Loop mode does not bypass confirmation gates for protected branch pushes, source mutation, publish, rollback, deployment, internal tick APIs, or production-impacting actions.
+
+### Product Evolution, MCP E2E, And Production Lifecycle Governance
+
+`mcp-e2e-governor` governs MCP product journeys from code-first discovery to prompt confirmation, execution, assertions, diagnosis, and self-evolution proposal gating.
+
+`product-evolution-lab` runs external product-evolution pressure through configured product profiles. It does not assume a specific project layout. Configure product-specific readiness, E2E, improvement, and review behavior through product-owned commands or profile data; the toolkit stores status and run evidence under `data/product-evolution-lab/`.
 
 `production-lifecycle-governor` turns the full production validation and release decision lifecycle into one reusable agent workflow. It first discovers real services, connected systems, data roots, traffic generators, lifecycle runners, LLM, SCM, and CI/CD boundaries, then executes:
 
@@ -135,7 +141,7 @@ It reads agent and plugin metadata from manifest/catalog files, then supports se
 | Agent instructions are edited without a contract. | Each agent has a manifest for inputs, outputs, evidence, gates, dangerous actions, and native capabilities. |
 | Codex distributions are maintained by hand. | Codex TOML is generated from canonical Markdown sources and manifests. |
 | Local diagnostics depend on OS-specific commands. | The sandbox provides portable HTTP, port, artifact, and Git checks. |
-| Git sync, commit, push, MR, and CI actions blur into one risky operation. | `gitlab-sync` makes each step explicit and confirmation-bound. |
+| Git sync, commit, push, PR/MR, and CI actions blur into one risky operation. | `scm-sync-governor` makes each step explicit and confirmation-bound. |
 | User-flow validation bypasses the real UI. | `user-flow-debug` requires real Dashboard operation and screenshot evidence. |
 | Production validation accidentally uses mock/demo paths. | `production-lifecycle-governor` blocks product-grade claims unless real boundaries are proven. |
 | Installed-project edits flow back without review. | Offline proposals are generated and accepted only by the toolkit maintainer. |
@@ -181,7 +187,7 @@ find-artifacts     Inspect output/runs/<runId>/ artifacts and final/manifest.jso
 | Not | Meaning |
 | --- | --- |
 | Not a general agent framework | It does not own the model runtime or prompt-execution engine. |
-| Not a GitLab replacement | It governs local GitLab collaboration workflows; GitLab remains the system of record. |
+| Not an SCM host replacement | It governs local Git collaboration workflows; GitHub, GitLab, or another SCM host remains the system of record. |
 | Not a full browser testing framework | `user-flow-debug` is an evidence-driven debugging workflow, not a replacement for a full test suite. |
 | Not a script dump | Reusable diagnostics belong in `sandbox/` and are distributed through install/update flows. |
 
@@ -221,7 +227,7 @@ Preview install output without writing files:
 Install or update one agent:
 
 ```bash
-/Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool codex --agent mcp-agent-e2e-designer --update
+/Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool codex --agent mcp-e2e-governor --update
 ```
 
 Auto-install into detected tools:
@@ -254,10 +260,10 @@ npm run agents:codex-status -- --project-root /path/to/your/project
 
 ## Usage
 
-GitLab 同步：
+SCM 同步：
 
 ```text
-使用 gitlab-sync，把本地 dev 和 origin/dev 同步，先检查状态，不要直接 push。
+使用 scm-sync-governor，把本地 dev 和 origin/dev 同步，先检查状态，不要直接 push。
 ```
 
 用户流调试：
@@ -266,22 +272,22 @@ GitLab 同步：
 使用 user-flow-debug，入口 UI 为 index.html，跑 deployed 环境的目标场景，新 run，real JDBC，截图到 /tmp/user-flow，策略 diagnose-only。
 ```
 
-DomainForge Fabric 进化实验：
+通用产品进化实验：
 
 ```text
-使用 domainforge-fabric-evolution-lab，在 local-prodlike 环境下检查 domainforge-fabric 生产级闭环 readiness，然后基于我提供的素材目录和场景目标跑 MCP 生命周期 E2E，收集 evidence 并触发 self-evolution。GitLab MR 只在我明确允许时创建，不要 merge。
+使用 product-evolution-lab，目标是验证当前产品是否能完成从授权材料到产品工作流、证据收集、改进建议和人工 review 的闭环。产品根目录为 /path/to/product，E2E 命令由 PRODUCT_EVOLUTION_LAB_E2E_COMMAND 提供，循环间隔 15 分钟，遇到产品级 blocker 立即停止。
 ```
 
-DomainForge Fabric 可配置时长常驻进化实验：
+可配置时长常驻进化实验：
 
 ```text
-使用 domainforge-fabric-evolution-lab，在 Codex Desktop 中启动用户指定时长或 always-on 运行。请启动 toolkit 的 run-lifecycle.sh，使用 preview-only 和 low-risk-only MR 策略，每 15 分钟轮转一次公开材料/场景目标并在聊天中主动反馈一次状态；同时维护 current-status.md、latest-run 和 continuous-always.log。
+使用 product-evolution-lab，在 Codex Desktop 中启动用户指定时长或 always-on 运行。请使用产品 profile 中的 readiness、E2E、improvement 和 review 命令，每 15 分钟反馈一次状态；同时维护 current-status.md、latest-run 和 logs/continuous.log。
 ```
 
 通用产品生产生命周期：
 
 ```text
-使用 production-lifecycle-governor，基于当前项目发现真实服务、接入项目、流量发生器、LLM、GitLab/GitHub 和 Jenkins/CI 配置。请清理旧固定时长脚本、stale heartbeat、历史运行数据、过期报告和临时日志；保留项目注册、连接器、规则、环境和审计。然后做 readiness、非 mock 预检，预检通过后按我指定的时长启动长稳验证，并每 30 分钟汇报产品自身和每个接入项目的健康、流量、机会点、代码升级、SCM、CI/CD、治理门禁、release evidence、场景矩阵、风险登记和 GO/NO-GO 结论。
+使用 production-lifecycle-governor，基于当前项目发现真实服务、接入项目、流量发生器、LLM、SCM 和 CI/CD 配置。请清理旧固定时长脚本、stale heartbeat、历史运行数据、过期报告和临时日志；保留项目注册、连接器、规则、环境和审计。然后做 readiness、非 mock 预检，预检通过后按我指定的时长启动长稳验证，并每 30 分钟汇报产品自身和每个接入项目的健康、流量、机会点、代码升级、SCM、CI/CD、治理门禁、release evidence、场景矩阵、风险登记和 GO/NO-GO 结论。
 ```
 
 time-driven 本地调试示例：
@@ -338,7 +344,7 @@ Create a proposal from a project with installed Codex agents:
 cd /path/to/your/project
 /Users/wangyejing/github/agent-octopus-toolkit/scripts/propose-changes.py \
   --tool codex \
-  --title "improve gitlab-sync for project X"
+  --title "improve scm-sync-governor for project X"
 ```
 
 This creates:
@@ -373,7 +379,7 @@ Accept one file only:
 ```bash
 /Users/wangyejing/github/agent-octopus-toolkit/scripts/apply-proposal.py \
   /path/to/proposal-YYYYMMDD-HHMMSS \
-  --file integrations/codex/agents/gitlab-sync.toml \
+  --file integrations/codex/agents/scm-sync-governor.toml \
   --accept
 ```
 

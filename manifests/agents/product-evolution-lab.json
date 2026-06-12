@@ -1,15 +1,15 @@
 {
   "schema": "agent-octopus-agent/v1",
-  "id": "domainforge-fabric-evolution-lab",
+  "id": "product-evolution-lab",
   "version": "1.0.0",
   "lifecycle": "experimental",
-  "pluginId": "domainforge-fabric-lab",
-  "category": "domainforge",
+  "pluginId": "product-evolution-lab",
+  "category": "product-evolution",
   "source": {
-    "claudeMarkdown": "agents/domainforge-fabric-evolution-lab.md"
+    "claudeMarkdown": "agents/product-evolution-lab.md"
   },
   "distributions": {
-    "codexToml": "integrations/codex/agents/domainforge-fabric-evolution-lab.toml"
+    "codexToml": "integrations/codex/agents/product-evolution-lab.toml"
   },
   "native": {
     "model": "default",
@@ -22,7 +22,7 @@
     ],
     "disallowedTools": [
       "production-customer-traffic",
-      "domains-source-mutation"
+      "protected-asset-mutation"
     ],
     "skills": [
       "agency-software-architect",
@@ -31,69 +31,74 @@
     "memory": "project-and-user",
     "hooks": [],
     "allowedSpawnAgents": [
-      "mcp-agent-e2e-designer",
+      "mcp-e2e-governor",
       "user-flow-debug",
       "production-lifecycle-governor"
     ]
   },
-  "purpose": "DomainForge Fabric dev-stage production-closed-loop lab that rotates public materials, runs MCP E2E pressure, submits self-evolution evidence, and validates review closure.",
+  "purpose": "Generic dev-stage product evolution lab for rotating authorized materials, running product E2E pressure, collecting evidence, triggering improvement workflows, and validating human review closure.",
   "boundaries": {
     "allowed": [
       "Operate as an external lab agent",
-      "Use DomainForge MCP and self-evolution product boundaries",
+      "Use product-approved UI/API/MCP/CLI entrypoints",
       "Maintain toolkit-managed lab storage",
-      "Trigger self-evolution evidence submission",
-      "Simulate production user review closure"
+      "Trigger configured improvement evidence submission",
+      "Simulate or verify human review closure"
     ],
     "forbidden": [
-      "Become part of the DomainForge production runtime",
-      "Modify domains business assets",
-      "Merge GitLab merge requests",
+      "Become part of the target product production runtime",
+      "Modify protected product assets without explicit approval",
+      "Merge SCM change requests",
       "Publish lifecycle changes without explicit confirmation",
       "Use production customer traffic"
     ]
   },
   "inputs": [
-    "domainforge root",
+    "goal",
+    "product root",
+    "product profile",
     "runtime target",
-    "MCP endpoint",
-    "service health URL",
-    "self-evolution URL",
+    "loop cadence",
+    "stop condition",
+    "entrypoints and health checks",
     "material paths or public material authorization",
-    "scenario goal",
     "publish policy",
     "fix policy"
   ],
   "outputs": [
     "current status file",
     "latest run link",
+    "loop state",
+    "iteration report",
     "run summary",
-    "MCP results",
-    "self-evolution run",
+    "E2E results",
+    "improvement workflow result",
     "user-flow results",
     "screenshots",
     "report"
   ],
   "evidence": [
-    "MCP calls",
+    "per-iteration evidence",
+    "UI/API/MCP/CLI calls",
     "service responses",
     "execution traces",
-    "LLM traces",
+    "model or tool traces",
     "review screenshots",
-    "self-evolution EvidenceBundle",
-    "EvolutionOpportunity",
-    "EvolutionPlan"
+    "evidence bundle",
+    "improvement opportunity",
+    "proposal or plan"
   ],
   "confirmationGates": [
     "public material authorization",
-    "GitLab MR creation",
+    "SCM change request creation",
     "publish",
     "rollback",
     "destroy",
-    "source mutation"
+    "source mutation",
+    "protected asset mutation"
   ],
   "dangerousActions": [
-    "GitLab MR creation",
+    "SCM change request creation",
     "lifecycle publish",
     "lifecycle rollback",
     "lifecycle destroy",
@@ -102,15 +107,19 @@
   "validation": {
     "requiredSections": [
       "Core Boundary",
-      "Business Domain Boundary",
+      "Product Profile",
+      "Protected Asset Boundary",
       "Persistent Chat Reporting",
       "Required Production-Closed-Loop Readiness",
+      "Goal-Driven Loop Mode",
       "Standard Workflow",
       "Safety Rules",
       "Final Response Shape"
     ],
     "requiredPhrases": [
-      "BLOCKED: fabric is not production-closed-loop ready",
+      "BLOCKED: product closed loop is not ready",
+      "loopState",
+      "stopCondition",
       "current-status.md",
       "Do not use this lab agent against production customer traffic"
     ]

@@ -1,15 +1,15 @@
 {
   "schema": "agent-octopus-agent/v1",
-  "id": "mcp-agent-e2e-designer",
+  "id": "mcp-e2e-governor",
   "version": "1.0.0",
   "lifecycle": "beta",
   "pluginId": "mcp-e2e-governance",
   "category": "mcp-e2e",
   "source": {
-    "claudeMarkdown": "agents/mcp-agent-e2e-designer.md"
+    "claudeMarkdown": "agents/mcp-e2e-governor.md"
   },
   "distributions": {
-    "codexToml": "integrations/codex/agents/mcp-agent-e2e-designer.toml"
+    "codexToml": "integrations/codex/agents/mcp-e2e-governor.toml"
   },
   "native": {
     "model": "default",
@@ -48,6 +48,9 @@
   },
   "inputs": [
     "project id",
+    "goal",
+    "loop cadence",
+    "stop condition",
     "runtime target",
     "MCP entrypoint",
     "fix policy",
@@ -58,6 +61,8 @@
   ],
   "outputs": [
     "project profile",
+    "loop state",
+    "iteration report",
     "E2E use case draft",
     "assertion results",
     "evidence references",
@@ -66,6 +71,7 @@
   ],
   "evidence": [
     "MCP responses",
+    "per-iteration evidence",
     "service responses",
     "artifacts",
     "logs",
@@ -91,14 +97,18 @@
       "Default Invocation Behavior",
       "Code-First Discovery",
       "Readiness Gate",
+      "Goal-Driven Loop Mode",
       "Execution",
+      "Project Profile Extensions",
       "Self-Evolution Proposal Gate",
       "Final Report"
     ],
     "requiredPhrases": [
       "promptConfirmation",
       "Do not start E2E execution",
-      "pending-user-confirmation"
+      "pending-user-confirmation",
+      "loopState",
+      "stopCondition"
     ]
   }
 }

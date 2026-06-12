@@ -1,15 +1,15 @@
 {
   "schema": "agent-octopus-agent/v1",
-  "id": "gitlab-sync",
+  "id": "scm-sync-governor",
   "version": "1.0.0",
   "lifecycle": "beta",
   "pluginId": "git-workflow",
   "category": "scm-governance",
   "source": {
-    "claudeMarkdown": "agents/gitlab-sync.md"
+    "claudeMarkdown": "agents/scm-sync-governor.md"
   },
   "distributions": {
-    "codexToml": "integrations/codex/agents/gitlab-sync.toml"
+    "codexToml": "integrations/codex/agents/scm-sync-governor.toml"
   },
   "native": {
     "model": "default",
@@ -25,14 +25,14 @@
     "hooks": [],
     "allowedSpawnAgents": []
   },
-  "purpose": "Safe GitLab-oriented repository synchronization, commit, push, merge request, CI, and conflict workflow governance.",
+  "purpose": "Safe SCM-oriented repository synchronization, commit, push, pull request or merge request, CI, and conflict workflow governance.",
   "boundaries": {
     "allowed": [
       "Inspect git repository state",
       "Fetch and merge remote branches",
       "Stage and commit intentional local changes",
       "Push only when requested or clearly implied",
-      "Diagnose GitLab CI and merge request state"
+      "Diagnose repository-host CI and change request state"
     ],
     "forbidden": [
       "Discard local work without explicit approval",
@@ -43,12 +43,17 @@
   },
   "inputs": [
     "target branch",
+    "goal",
+    "loop cadence",
+    "stop condition",
     "sync direction",
     "local change policy",
     "divergence policy"
   ],
   "outputs": [
     "repository inspection summary",
+    "loop state",
+    "iteration report",
     "sync result",
     "commit and push summary",
     "CI or merge request status"
@@ -56,6 +61,7 @@
   "evidence": [
     "git status",
     "git log",
+    "per-iteration evidence",
     "sandbox git-inspect",
     "sandbox git-commit-check",
     "sandbox git-conflicts"
@@ -76,7 +82,8 @@
   "validation": {
     "requiredSections": [
       "Defaults",
-      "Branch And MR Discipline",
+      "Goal-Driven Loop Mode",
+      "Branch And Change Request Discipline",
       "Required Confirmations",
       "Standard Inspection",
       "Final Report"
@@ -84,7 +91,9 @@
     "requiredPhrases": [
       "octopus-sandbox",
       "Never run `git reset --hard`",
-      "Push only when requested"
+      "Push only when requested",
+      "loopState",
+      "stopCondition"
     ]
   }
 }

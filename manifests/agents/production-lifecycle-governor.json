@@ -30,7 +30,7 @@
     "memory": "project-and-user",
     "hooks": [],
     "allowedSpawnAgents": [
-      "gitlab-sync"
+      "scm-sync-governor"
     ]
   },
   "purpose": "Generic full production lifecycle governance for agent products using real services, non-mock validation, configurable long-run execution, evolution delivery, cleanup, release evidence, scenario matrices, risk register, and GO/NO-GO decisions.",
@@ -57,8 +57,11 @@
   },
   "inputs": [
     "product root",
+    "goal",
     "user-requested duration",
     "report interval",
+    "loop cadence",
+    "stop condition",
     "release candidate",
     "run mode",
     "data root",
@@ -72,6 +75,8 @@
   ],
   "outputs": [
     "readiness result",
+    "loop state",
+    "iteration report",
     "cleanup result",
     "non-mock precheck result",
     "periodic status reports",
@@ -83,6 +88,7 @@
   ],
   "evidence": [
     "health checks",
+    "per-iteration evidence",
     "traffic counts",
     "LLM trace/provider/model",
     "SCM branch or MR/PR",
@@ -123,6 +129,7 @@
       "Cleanup Protocol",
       "Non-Mock Precheck",
       "Long-Run Execution",
+      "Goal-Driven Loop Mode",
       "Scenario Matrix",
       "Release Evidence",
       "GO / NO-GO Criteria",
@@ -135,7 +142,9 @@
       "Never report that a requested-duration run is running",
       "GO",
       "CONDITIONAL-GO",
-      "NO-GO"
+      "NO-GO",
+      "loopState",
+      "stopCondition"
     ]
   }
 }

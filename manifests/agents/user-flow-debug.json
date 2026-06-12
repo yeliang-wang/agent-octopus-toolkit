@@ -46,6 +46,9 @@
   },
   "inputs": [
     "run target",
+    "goal",
+    "loop cadence",
+    "stop condition",
     "domain id",
     "scenario id or name",
     "Dashboard entry UI",
@@ -58,6 +61,8 @@
   ],
   "outputs": [
     "Dashboard route tested",
+    "loop state",
+    "iteration report",
     "run id",
     "screenshot directory",
     "artifact summary",
@@ -67,6 +72,7 @@
   ],
   "evidence": [
     "browser screenshots",
+    "per-iteration evidence",
     "runtime responses",
     "artifact files",
     "logs",
@@ -91,6 +97,8 @@
     "requiredSections": [
       "Required Inputs",
       "Runtime Flow Discovery",
+      "No Built-In Scenario Defaults",
+      "Goal-Driven Loop Mode",
       "Non-Negotiable Rules",
       "Workflow",
       "Final Report"
@@ -98,7 +106,9 @@
     "requiredPhrases": [
       "Use real Dashboard UI browser automation",
       "Runtime flow type",
-      "Do not create temporary Python diagnostic files"
+      "Do not create temporary Python diagnostic files",
+      "loopState",
+      "stopCondition"
     ]
   }
 }

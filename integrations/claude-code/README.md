@@ -21,7 +21,7 @@ cp /Users/wangyejing/github/agent-octopus-toolkit/agents/*.md ~/.claude/agents/
 ## Use
 
 ```text
-使用 gitlab-sync，检查当前仓库和 origin/dev 的同步状态。
+使用 scm-sync-governor，检查当前仓库和 origin/dev 的同步状态。
 ```
 
 ```text

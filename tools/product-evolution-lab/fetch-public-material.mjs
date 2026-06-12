@@ -160,7 +160,7 @@ async function fetchText(url) {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "user-agent": "Mozilla/5.0 domainforge-fabric-evolution-lab/1.0"
+        "user-agent": "Mozilla/5.0 product-evolution-lab/1.0"
       }
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
@@ -190,7 +190,7 @@ function renderMaterial(candidate) {
     "",
     "## E2E 进化压力目标",
     "",
-    `围绕“${goal}”，验证 DomainForge Fabric 是否能从公网业务材料完成素材理解、目标结构化、匹配规则推荐、可达性评估、候选能力映射、方案预览，并把运行证据提交给 self-evolution。`,
+    `围绕“${goal}”，验证目标产品是否能从授权业务材料完成素材理解、目标结构化、候选匹配、可达性评估、方案预览，并把运行证据提交给配置的改进工作流。`,
     "",
     "## 边界",
     "",

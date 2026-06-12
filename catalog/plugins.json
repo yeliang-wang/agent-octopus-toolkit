@@ -4,44 +4,14 @@
   "plugins": [
     {
       "schema": "agent-octopus-plugin/v1",
-      "id": "domainforge-fabric-lab",
-      "version": "1.0.0",
-      "lifecycle": "experimental",
-      "category": "domainforge",
-      "title": "DomainForge Fabric Lab",
-      "description": "DomainForge Fabric dev-stage production-closed-loop lab with rotating public materials, MCP E2E pressure, self-evolution evidence, review closure, and long-run status artifacts.",
-      "agents": [
-        "domainforge-fabric-evolution-lab"
-      ],
-      "installTargets": [
-        "claude-code",
-        "codex"
-      ],
-      "qualityGates": [
-        "manifest-validation",
-        "distribution-generation",
-        "agent-eval",
-        "install-roundtrip"
-      ],
-      "agentCount": 1,
-      "agentSummaries": [
-        {
-          "id": "domainforge-fabric-evolution-lab",
-          "lifecycle": "experimental",
-          "category": "domainforge"
-        }
-      ]
-    },
-    {
-      "schema": "agent-octopus-plugin/v1",
       "id": "git-workflow",
       "version": "1.0.0",
       "lifecycle": "beta",
       "category": "scm-governance",
-      "title": "Git Workflow",
-      "description": "Safe GitLab synchronization, commit, push, merge request, CI, and conflict workflow governance.",
+      "title": "SCM Workflow",
+      "description": "Safe repository synchronization, commit, push, pull request or merge request, CI, and conflict workflow governance.",
       "agents": [
-        "gitlab-sync"
+        "scm-sync-governor"
       ],
       "installTargets": [
         "claude-code",
@@ -55,7 +25,7 @@
       "agentCount": 1,
       "agentSummaries": [
         {
-          "id": "gitlab-sync",
+          "id": "scm-sync-governor",
           "lifecycle": "beta",
           "category": "scm-governance"
         }
@@ -70,7 +40,7 @@
       "title": "MCP E2E Governance",
       "description": "MCP intelligent-agent E2E lifecycle governance with prompt confirmation, assertion design, evidence, code-fix limits, and self-evolution proposal gates.",
       "agents": [
-        "mcp-agent-e2e-designer",
+        "mcp-e2e-governor",
         "user-flow-debug"
       ],
       "installTargets": [
@@ -86,7 +56,7 @@
       "agentCount": 2,
       "agentSummaries": [
         {
-          "id": "mcp-agent-e2e-designer",
+          "id": "mcp-e2e-governor",
           "lifecycle": "beta",
           "category": "mcp-e2e"
         },
@@ -94,6 +64,36 @@
           "id": "user-flow-debug",
           "lifecycle": "beta",
           "category": "dashboard-e2e"
+        }
+      ]
+    },
+    {
+      "schema": "agent-octopus-plugin/v1",
+      "id": "product-evolution-lab",
+      "version": "1.0.0",
+      "lifecycle": "experimental",
+      "category": "product-evolution",
+      "title": "Product Evolution Lab",
+      "description": "Generic dev-stage product evolution lab with rotating authorized materials, product E2E pressure, improvement evidence, review closure, and long-run status artifacts.",
+      "agents": [
+        "product-evolution-lab"
+      ],
+      "installTargets": [
+        "claude-code",
+        "codex"
+      ],
+      "qualityGates": [
+        "manifest-validation",
+        "distribution-generation",
+        "agent-eval",
+        "install-roundtrip"
+      ],
+      "agentCount": 1,
+      "agentSummaries": [
+        {
+          "id": "product-evolution-lab",
+          "lifecycle": "experimental",
+          "category": "product-evolution"
         }
       ]
     },

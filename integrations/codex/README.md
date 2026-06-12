@@ -23,9 +23,9 @@ cp /Users/wangyejing/github/agent-octopus-toolkit/integrations/codex/agents/*.to
 
 This does not replace existing Codex skills under `.codex/skills/`; it adds project-scoped agents under `.codex/agents/`.
 
-## mcp-agent-e2e-designer Notes
+## mcp-e2e-governor Notes
 
-`mcp-agent-e2e-designer` keeps its historical install name for compatibility, but its current role is broader than design. Treat it as an MCP intelligent-agent E2E lifecycle governor:
+Treat `mcp-e2e-governor` as an MCP intelligent-agent E2E lifecycle governor:
 
 - Discover the project profile from code/config before asking business questions.
 - Draft the user-visible E2E prompt and require explicit confirmation before runtime or MCP execution.
@@ -36,7 +36,7 @@ This does not replace existing Codex skills under `.codex/skills/`; it adds proj
 
 ## user-flow-debug Notes
 
-`user-flow-debug` is intended for browser-level Dashboard validation, not API-only smoke testing. It discovers the runtime flow from the live Dashboard and loaded domain contract before acting:
+`user-flow-debug` is intended for browser-level Dashboard validation, not API-only smoke testing. It discovers the runtime flow from the live Dashboard and loaded product contract before acting:
 
 - The caller must provide the Dashboard entry UI, such as `index.html`, `domain-chat.html`, `run-detail.html`, or a full entry URL. The agent must not infer or switch entry pages from domain/scenario names.
 - `attachment-driven`: upload only the attachments requested by the visible start form or first step.

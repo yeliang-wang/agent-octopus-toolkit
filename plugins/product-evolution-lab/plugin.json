@@ -1,0 +1,12 @@
+{
+  "schema": "agent-octopus-plugin/v1",
+  "id": "product-evolution-lab",
+  "version": "1.0.0",
+  "lifecycle": "experimental",
+  "category": "product-evolution",
+  "title": "Product Evolution Lab",
+  "description": "Generic dev-stage product evolution lab with rotating authorized materials, product E2E pressure, improvement evidence, review closure, and long-run status artifacts.",
+  "agents": ["product-evolution-lab"],
+  "installTargets": ["claude-code", "codex"],
+  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip"]
+}

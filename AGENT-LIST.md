@@ -2,9 +2,9 @@
 
 | Agent | File | Best For |
 | --- | --- | --- |
-| domainforge-fabric-evolution-lab | `agents/domainforge-fabric-evolution-lab.md` | DomainForge Fabric production-closed-loop lab for material rotation, MCP E2E pressure, evidence submission, review closure, and self-evolution feedback. |
-| gitlab-sync | `agents/gitlab-sync.md` | Safe GitLab sync, commit, push, MR/CI, branch ambiguity, and conflict handling. |
-| mcp-agent-e2e-designer | `agents/mcp-agent-e2e-designer.md` | MCP intelligent-agent E2E lifecycle governance with code-first discovery, prompt confirmation, execution, diagnosis, controlled fixes, and self-evolution proposals. |
+| product-evolution-lab | `agents/product-evolution-lab.md` | Generic product evolution lab for material rotation, product E2E pressure, evidence submission, review closure, and improvement feedback. |
+| scm-sync-governor | `agents/scm-sync-governor.md` | Safe SCM sync, commit, push, PR/MR/CI, branch ambiguity, and conflict handling. |
+| mcp-e2e-governor | `agents/mcp-e2e-governor.md` | MCP intelligent-agent E2E lifecycle governance with code-first discovery, prompt confirmation, execution, diagnosis, controlled fixes, and self-evolution proposals. |
 | production-lifecycle-governor | `agents/production-lifecycle-governor.md` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, evolution delivery, release evidence, scenario matrix, risk register, and GO/NO-GO decisions. |
 | user-flow-debug | `agents/user-flow-debug.md` | Real Dashboard user-flow debugging with runtime-flow discovery, screenshots, artifact checks, role validation, diagnosis, and controlled fixes. |
 
@@ -14,9 +14,9 @@ Each agent must have a product contract:
 
 | Agent | Manifest |
 | --- | --- |
-| domainforge-fabric-evolution-lab | `manifests/agents/domainforge-fabric-evolution-lab.json` |
-| gitlab-sync | `manifests/agents/gitlab-sync.json` |
-| mcp-agent-e2e-designer | `manifests/agents/mcp-agent-e2e-designer.json` |
+| product-evolution-lab | `manifests/agents/product-evolution-lab.json` |
+| scm-sync-governor | `manifests/agents/scm-sync-governor.json` |
+| mcp-e2e-governor | `manifests/agents/mcp-e2e-governor.json` |
 | production-lifecycle-governor | `manifests/agents/production-lifecycle-governor.json` |
 | user-flow-debug | `manifests/agents/user-flow-debug.json` |
 
@@ -26,10 +26,10 @@ Run `npm run validate` to check manifests, Markdown sources, Codex distributions
 
 | Plugin | Manifest | Agents |
 | --- | --- | --- |
-| git-workflow | `plugins/git-workflow/plugin.json` | `gitlab-sync` |
-| mcp-e2e-governance | `plugins/mcp-e2e-governance/plugin.json` | `mcp-agent-e2e-designer`, `user-flow-debug` |
+| git-workflow | `plugins/git-workflow/plugin.json` | `scm-sync-governor` |
+| mcp-e2e-governance | `plugins/mcp-e2e-governance/plugin.json` | `mcp-e2e-governor`, `user-flow-debug` |
 | production-lifecycle | `plugins/production-lifecycle/plugin.json` | `production-lifecycle-governor` |
-| domainforge-fabric-lab | `plugins/domainforge-fabric-lab/plugin.json` | `domainforge-fabric-evolution-lab` |
+| product-evolution-lab | `plugins/product-evolution-lab/plugin.json` | `product-evolution-lab` |
 
 Generated catalogs live in `catalog/agents.json` and `catalog/plugins.json`.
 

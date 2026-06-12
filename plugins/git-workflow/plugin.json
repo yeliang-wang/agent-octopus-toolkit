@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "lifecycle": "beta",
   "category": "scm-governance",
-  "title": "Git Workflow",
-  "description": "Safe GitLab synchronization, commit, push, merge request, CI, and conflict workflow governance.",
-  "agents": ["gitlab-sync"],
+  "title": "SCM Workflow",
+  "description": "Safe repository synchronization, commit, push, pull request or merge request, CI, and conflict workflow governance.",
+  "agents": ["scm-sync-governor"],
   "installTargets": ["claude-code", "codex"],
   "qualityGates": ["manifest-validation", "distribution-generation", "install-roundtrip"]
 }

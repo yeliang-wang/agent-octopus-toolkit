@@ -15,7 +15,7 @@ Use the Dashboard UI like an actual user. Do not bypass the product flow with di
 Before starting a user-flow simulation, determine:
 
 - Run target: `deployed` or `local-dev`.
-- Domain ID, for example `jsnx`.
+- Product/domain/workspace identifier when the target application requires one.
 - Scenario name or scenario ID.
 - Dashboard entry UI: the exact Dashboard page/route to operate, for example `index.html`, `domain-chat.html`, `run-detail.html`, or a full Dashboard URL including that route.
 - Attachment path, or explicit statement that no attachment is needed.
@@ -29,7 +29,7 @@ Before starting a user-flow simulation, determine:
   - `code-fix`: allow local workspace code/config/domain fixes, rebuild, restart, and rerun.
   - `module-update`: allow packaging local fixes and updating selected deployed modules after explicit approval.
 
-Ask only for missing values. Do not silently assume the JSNX scenario unless the user asks for the default validation.
+Ask only for missing values. Do not silently assume any default business scenario.
 
 ## Runtime Flow Discovery
 
@@ -42,7 +42,7 @@ Use only the specified entry UI as the user-facing starting point:
 - `run-detail.html`: run inspection/resume entry. Require a concrete `runId`.
 - Other route/full URL: follow exactly as supplied and report the route used.
 
-Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded domain contract. Do not infer the flow from the domain name alone, and do not reuse the JSNX attachment-first flow for other domains.
+Before deciding how to operate the page, identify the interaction model from the live Dashboard and loaded product contract. Do not infer the flow from product/domain names or prior projects.
 
 Use the target Domain ID and Scenario ID to inspect the actual runtime state exposed by the page and its normal backing responses, including:
 
@@ -70,25 +70,67 @@ After classification, follow the UI contract for the selected run:
 
 If the flow type is ambiguous, capture the page state, inspect the loaded plan/scenario contract, and ask one focused clarification instead of guessing.
 
-## Default JSNX Validation
+## No Built-In Scenario Defaults
 
-Use these values only when the user explicitly asks for default production validation:
+Do not carry built-in product, domain, scenario, attachment, URL, or port defaults inside this generic agent.
 
-- Domain ID: `jsnx`
-- Scenario: `贷后退出预警辅助`
-- Attachment: `/path/to/attachment.xlsx`
+If the user asks for a default validation, derive it from the current workspace, installed profile, or product contract, then show the inferred values before execution. Do not reuse a previous run unless the user explicitly asks to resume.
 
-Do not reuse a previous run unless the user explicitly asks to resume.
+## Goal-Driven Loop Mode
+
+When the user provides a user-flow goal and asks to loop, repeatedly run the real Dashboard flow until the goal is proven, the selected fix policy is exhausted, or a declared `stopCondition` is met.
+
+Minimum loop inputs:
+
+- `goal`: the user-visible flow outcome to prove.
+- `runTarget`: deployed or local-dev.
+- `Dashboard entry UI`: exact route or full URL.
+- `loopCadence`: continuous, after each fix, fixed interval, or user-checkpoint.
+- `stopCondition`: flow passes, maximum attempts, deadline, ambiguous UI contract, required user choice, fix-policy boundary, or explicit user stop.
+- `fixPolicy`: diagnose-only, runtime-fix, code-fix, or module-update.
+
+Use this loop state in every iteration:
+
+```text
+loopState:
+  goal:
+  runTarget:
+  dashboardEntry:
+  runId:
+  attempt:
+  runtimeFlowType:
+  screenshots:
+  artifactStatus:
+  lastFailure:
+  lastFix:
+  blocker:
+  nextAction:
+  stopCondition:
+```
+
+Each loop iteration must follow:
+
+1. Re-open or start from the specified Dashboard entry UI.
+2. Discover the live runtime flow type.
+3. Execute the visible step loop through the UI.
+4. Validate screenshots, artifacts, final outputs, and role display.
+5. Diagnose failures from UI, logs, run state, and artifacts.
+6. Apply only the selected `fixPolicy`.
+7. Rerun from a clean run unless the user explicitly requested resume.
+
+The loop must not skip the UI by calling product APIs for the normal user journey. Internal tick APIs, runtime restarts, code fixes, and deployed module updates remain confirmation gates.
+
+For long-running loops, report progress at the requested cadence with attempt number, current run id, runtime flow type, last screenshot directory, artifact status, failure boundary, blocker, and next action.
 
 ## Non-Negotiable Rules
 
 - Use real Dashboard UI browser automation.
 - Use the toolkit sandbox for OS-sensitive checks: prefer `$AGENT_OCTOPUS_TOOLKIT_HOME/bin/octopus-sandbox`; if it is not set, use `/Users/wangyejing/github/agent-octopus-toolkit/bin/octopus-sandbox` when it exists.
-- If browser automation or Playwright is missing, do not download or install it under a target-project path or `/tmp/datacrew-playwright`. Update or install the reusable Playwright/browser automation capability under `${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}` so any project with `agent-octopus-toolkit` installed can use it through the sandbox.
+- If browser automation or Playwright is missing, do not download or install it under a target-project path or a project-specific temporary directory. Update or install the reusable Playwright/browser automation capability under `${AGENT_OCTOPUS_TOOLKIT_HOME:-/Users/wangyejing/github/agent-octopus-toolkit}` so any project with `agent-octopus-toolkit` installed can use it through the sandbox.
 - Do not create ad hoc Python scripts in the target agent workspace. If a missing diagnostic helper is needed, ask to add it to the toolkit sandbox instead.
 - Do not invent business content, fake JDBC/MCP results, fake reports, fake screenshots, fake artifacts, or fake user choices.
 - Questions, options, roles, modules, and outputs must come from domain contracts and runtime responses.
-- Interaction style must come from runtime flow discovery. Never assume the JSNX flow unless the selected run is actually attachment-driven or the user explicitly requested default JSNX validation.
+- Interaction style must come from runtime flow discovery. Never assume a flow from a prior project.
 - User choices must be submitted through the chat input and send button, for example `A. ...` or `B. ...`.
 - Capture screenshots before submitting a step answer, after submitting, after step result/artifacts appear, and final downloads.
 - Follow the selected fix policy. Do not silently escalate from diagnosis to runtime changes, code changes, or deployed module updates.
@@ -116,7 +158,7 @@ If nothing is provided, ask:
 
 ```text
 请确认本次用户流模拟：
-1. 业务域：例如 jsnx
+1. 产品/业务域标识：如果目标应用需要
 2. 业务场景：请选择场景名称或 ID
 3. Dashboard 入口 UI：例如 index.html、domain-chat.html、run-detail.html 或完整入口 URL
 4. 上传附件路径：如无附件请明确说明
