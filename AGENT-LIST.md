@@ -24,6 +24,8 @@ Run `npm run validate` to check manifests, Markdown sources, Codex distributions
 
 Every manifest also declares a structured `loopContract` and `runtimeAdapters.codexGoal` plan. Use `npm run agents:goal-plan -- --agent <agent> --project-id <project> "<goal>"` to render the Codex `/goal` mapping without making the toolkit Codex-only.
 
+Run `npm run release:check` before public distribution. The release gate requires package metadata, license, beta-or-better lifecycles, loop contracts, Codex goal plans, generated outputs, deterministic eval, and project-scoped Codex install drift to pass.
+
 ## Plugins
 
 | Plugin | Manifest | Agents |

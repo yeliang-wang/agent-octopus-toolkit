@@ -2,7 +2,7 @@
   "schema": "agent-octopus-agent/v1",
   "id": "product-evolution-lab",
   "version": "1.0.0",
-  "lifecycle": "experimental",
+  "lifecycle": "beta",
   "pluginId": "product-evolution-lab",
   "category": "product-evolution",
   "source": {

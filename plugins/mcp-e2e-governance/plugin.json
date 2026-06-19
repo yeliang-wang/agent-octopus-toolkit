@@ -8,5 +8,5 @@
   "description": "MCP intelligent-agent E2E lifecycle governance with prompt confirmation, assertion design, evidence, code-fix limits, and self-evolution proposal gates.",
   "agents": ["mcp-e2e-governor", "user-flow-debug"],
   "installTargets": ["claude-code", "codex"],
-  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip"]
+  "qualityGates": ["manifest-validation", "distribution-generation", "agent-eval", "install-roundtrip", "release-readiness"]
 }

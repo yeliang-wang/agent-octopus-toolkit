@@ -20,7 +20,8 @@
       "qualityGates": [
         "manifest-validation",
         "distribution-generation",
-        "install-roundtrip"
+        "install-roundtrip",
+        "release-readiness"
       ],
       "agentCount": 1,
       "agentSummaries": [
@@ -51,7 +52,8 @@
         "manifest-validation",
         "distribution-generation",
         "agent-eval",
-        "install-roundtrip"
+        "install-roundtrip",
+        "release-readiness"
       ],
       "agentCount": 2,
       "agentSummaries": [
@@ -71,7 +73,7 @@
       "schema": "agent-octopus-plugin/v1",
       "id": "product-evolution-lab",
       "version": "1.0.0",
-      "lifecycle": "experimental",
+      "lifecycle": "beta",
       "category": "product-evolution",
       "title": "Product Evolution Lab",
       "description": "Generic dev-stage product evolution lab with rotating authorized materials, product E2E pressure, improvement evidence, review closure, and long-run status artifacts.",
@@ -86,13 +88,14 @@
         "manifest-validation",
         "distribution-generation",
         "agent-eval",
-        "install-roundtrip"
+        "install-roundtrip",
+        "release-readiness"
       ],
       "agentCount": 1,
       "agentSummaries": [
         {
           "id": "product-evolution-lab",
-          "lifecycle": "experimental",
+          "lifecycle": "beta",
           "category": "product-evolution"
         }
       ]
@@ -101,7 +104,7 @@
       "schema": "agent-octopus-plugin/v1",
       "id": "production-lifecycle",
       "version": "1.0.0",
-      "lifecycle": "experimental",
+      "lifecycle": "beta",
       "category": "production-validation",
       "title": "Production Lifecycle",
       "description": "Generic production lifecycle governance for agent products with real services, configurable validation duration, cleanup, non-mock precheck, long-run execution, evolution delivery, evidence bundles, and GO/NO-GO decisions.",
@@ -116,13 +119,14 @@
         "manifest-validation",
         "distribution-generation",
         "agent-eval",
-        "install-roundtrip"
+        "install-roundtrip",
+        "release-readiness"
       ],
       "agentCount": 1,
       "agentSummaries": [
         {
           "id": "production-lifecycle-governor",
-          "lifecycle": "experimental",
+          "lifecycle": "beta",
           "category": "production-lifecycle"
         }
       ]

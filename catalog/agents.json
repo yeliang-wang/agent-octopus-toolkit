@@ -141,7 +141,7 @@
     {
       "id": "product-evolution-lab",
       "version": "1.0.0",
-      "lifecycle": "experimental",
+      "lifecycle": "beta",
       "pluginId": "product-evolution-lab",
       "pluginTitle": "Product Evolution Lab",
       "category": "product-evolution",
@@ -287,7 +287,7 @@
     {
       "id": "production-lifecycle-governor",
       "version": "1.0.0",
-      "lifecycle": "experimental",
+      "lifecycle": "beta",
       "pluginId": "production-lifecycle",
       "pluginTitle": "Production Lifecycle",
       "category": "production-lifecycle",

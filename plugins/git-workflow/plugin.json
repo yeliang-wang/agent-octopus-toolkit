@@ -8,5 +8,5 @@
   "description": "Safe repository synchronization, commit, push, pull request or merge request, CI, and conflict workflow governance.",
   "agents": ["scm-sync-governor"],
   "installTargets": ["claude-code", "codex"],
-  "qualityGates": ["manifest-validation", "distribution-generation", "install-roundtrip"]
+  "qualityGates": ["manifest-validation", "distribution-generation", "install-roundtrip", "release-readiness"]
 }

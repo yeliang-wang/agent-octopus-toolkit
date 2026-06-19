@@ -16,6 +16,7 @@ The product goal is simple: manage agent operations as reusable product assets, 
 - Runtime-neutral loop contracts with a Codex `/goal` adapter for Codex-native release workflows.
 - Generated Codex distributions from canonical Markdown agent sources.
 - Deterministic validation and eval scripts.
+- Release-readiness gates for public beta distribution.
 - A lightweight CLI control plane for listing, searching, installing, and checking drift.
 
 | Tool | Install Target | Scope |
@@ -67,6 +68,12 @@ Plugin contracts live in `plugins/<plugin>/plugin.json`. `scripts/generate-catal
 ### Deterministic Validation And Eval
 
 `npm run check` validates source files, generated distributions, plugin/catalog consistency, and core scripts. `npm run eval` runs deterministic quality checks and a temporary Codex install round-trip.
+
+### Release Readiness
+
+`npm run release:check` is the public-beta release gate. It checks package metadata, license, agent/plugin lifecycle state, loop contract coverage, Codex goal plans, generated outputs, deterministic eval, project-scoped Codex install drift, and whitespace safety.
+
+The release target is intentionally precise: Octopus AgentOps is a release-ready subagent toolkit and control plane, not a replacement for broad agent frameworks such as LangGraph, CrewAI, AutoGen, or OpenHands. See `docs/release-readiness.md` and `docs/competitive-baseline.md` for the release bar and comparison boundary.
 
 ### Portable Sandbox
 
@@ -284,6 +291,12 @@ cd /Users/wangyejing/github/agent-octopus-toolkit
 npm run validate
 ```
 
+Run the public-beta release gate:
+
+```bash
+npm run release:check
+```
+
 Use the control plane:
 
 ```bash
@@ -440,6 +453,13 @@ Run deterministic agent eval:
 npm run eval
 ```
 
+Run the release-readiness gate:
+
+```bash
+npm run release:check
+npm run release:check -- --json
+```
+
 Check the installer:
 
 ```bash
@@ -477,7 +497,9 @@ Then run:
 
 ```bash
 npm run validate
+npm run generate -- --check
 npm run eval
+npm run release:check
 /Users/wangyejing/github/agent-octopus-toolkit/scripts/install.sh --tool codex --dry-run
 ```
 
@@ -485,4 +507,4 @@ When adding reusable diagnostics, put them in `sandbox/octopus_sandbox.py`, then
 
 ## License
 
-License TBD. Add an explicit license before public distribution.
+MIT. See `LICENSE`.

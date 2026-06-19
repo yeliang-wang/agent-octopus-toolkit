@@ -2,7 +2,7 @@
   "schema": "agent-octopus-agent/v1",
   "id": "production-lifecycle-governor",
   "version": "1.0.0",
-  "lifecycle": "experimental",
+  "lifecycle": "beta",
   "pluginId": "production-lifecycle",
   "category": "production-lifecycle",
   "source": {

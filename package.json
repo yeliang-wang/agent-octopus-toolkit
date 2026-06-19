@@ -2,12 +2,12 @@
   "name": "agent-octopus-toolkit",
   "version": "1.0.0",
   "description": "Production-oriented agent workflow platform for Claude Code and Codex.",
-  "private": true,
   "scripts": {
-    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py scripts/generate-distributions.py scripts/generate-catalog.py scripts/evaluate-agents.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
+    "check": "python3 -m py_compile sandbox/octopus_sandbox.py scripts/propose-changes.py scripts/apply-proposal.py scripts/validate-toolkit.py scripts/octopus-control.py scripts/generate-distributions.py scripts/generate-catalog.py scripts/evaluate-agents.py scripts/release-readiness.py && bash -n scripts/install.sh && python3 scripts/validate-toolkit.py",
     "validate": "python3 scripts/validate-toolkit.py",
     "generate": "python3 scripts/generate-distributions.py && python3 scripts/generate-catalog.py",
     "eval": "python3 scripts/evaluate-agents.py",
+    "release:check": "python3 scripts/release-readiness.py",
     "agents:list": "python3 scripts/octopus-control.py list",
     "plugins:list": "python3 scripts/octopus-control.py plugins",
     "agents:search": "python3 scripts/octopus-control.py search",
@@ -29,7 +29,7 @@
     "ai-coding"
   ],
   "author": "",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/yeliang-wang/agent-octopus-toolkit/issues"
