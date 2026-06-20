@@ -51,6 +51,9 @@ PRODUCTION_RELEASE_RULE_PHRASES = [
     "Smoke checks may prove connectivity only",
     "product-native release evidence",
     "NO-GO",
+    "summary state only",
+    "externalized to iteration artifacts",
+    "state size guard",
 ]
 LOOP_GOAL_WINDOW_SECTION = "Loop Goal Window"
 RELEASE_COVERAGE_MATRIX_SECTION = "Release Coverage Matrix Loop"

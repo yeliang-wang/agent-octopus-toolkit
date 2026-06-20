@@ -337,6 +337,12 @@ loopState:
   stopCondition:
 ```
 
+Persist summary state only in `loop-state.json`. Do not store full API responses, full release decision payloads, full risk registers, raw logs, screenshots, traces, long stdout/stderr, or full evidence bundles in loop state. Externalize large evidence to per-iteration artifacts such as `artifacts/iteration-0007.json`, store only compact counters, status, blocker, next action, decision IDs, artifact paths, and bounded evidence snippets in state, and keep a separate artifact index when needed.
+
+JSONL loop logs must contain event summaries only: event type, attempt, timestamp, compact release decision, compact counters, blocker, and next action. They must not append full result payloads or product API responses. A release or GA loop must resume from the persisted attempt and product-native evidence store after restart, not restart evidence collection from zero unless the user explicitly requests a clean run.
+
+Before writing loop state, enforce a state size guard. If state would exceed the configured budget, compact it further, externalize more evidence to artifacts, or stop as `BLOCKED` with the exact reason. Never allow state payload growth to terminate a long-running loop after valid product evidence has been produced.
+
 ## Release Coverage Matrix Loop
 
 When a loop is tied to release readiness, production readiness, GA, RC, or a product-grade goal, convert the goal into a release coverage matrix before running or resuming the loop. The matrix prevents a loop from becoming service keepalive or repeated single-path reruns.

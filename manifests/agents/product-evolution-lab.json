@@ -162,7 +162,9 @@
       "blockerPolicy",
       "repairPolicy",
       "releaseDecision",
-      "decisionChain"
+      "decisionChain",
+      "artifactIndex",
+      "stateSizeGuard"
     ],
     "stopPolicies": [
       "goal_proven",
@@ -189,7 +191,9 @@
       "review closure evidence",
       "coverage matrix status",
       "repair verification evidence",
-      "per-phase decision chain"
+      "per-phase decision chain",
+      "iteration artifact references",
+      "state size guard result"
     ],
     "goalWindow": {
       "required": true,
@@ -309,7 +313,10 @@
       "阶段决策链",
       "Production Representative Sandbox",
       "production-representative/manifest.json",
-      "real target-product registration"
+      "real target-product registration",
+      "summary state only",
+      "externalized to iteration artifacts",
+      "state size guard"
     ]
   }
 }

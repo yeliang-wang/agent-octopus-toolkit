@@ -110,7 +110,9 @@
           "blockerPolicy",
           "repairPolicy",
           "releaseDecision",
-          "decisionChain"
+          "decisionChain",
+          "artifactIndex",
+          "stateSizeGuard"
         ],
         "stopPolicies": [
           "assertions_pass",
@@ -138,7 +140,9 @@
           "user corrections",
           "coverage matrix status",
           "repair verification evidence",
-          "per-phase decision chain"
+          "per-phase decision chain",
+          "iteration artifact references",
+          "state size guard result"
         ],
         "goalWindow": {
           "required": true,
@@ -351,7 +355,9 @@
           "blockerPolicy",
           "repairPolicy",
           "releaseDecision",
-          "decisionChain"
+          "decisionChain",
+          "artifactIndex",
+          "stateSizeGuard"
         ],
         "stopPolicies": [
           "goal_proven",
@@ -378,7 +384,9 @@
           "review closure evidence",
           "coverage matrix status",
           "repair verification evidence",
-          "per-phase decision chain"
+          "per-phase decision chain",
+          "iteration artifact references",
+          "state size guard result"
         ],
         "goalWindow": {
           "required": true,
@@ -595,7 +603,9 @@
           "blockerPolicy",
           "repairPolicy",
           "releaseDecision",
-          "decisionChain"
+          "decisionChain",
+          "artifactIndex",
+          "stateSizeGuard"
         ],
         "stopPolicies": [
           "product_native_go",
@@ -625,7 +635,9 @@
           "logs and artifacts",
           "coverage matrix status",
           "repair verification evidence",
-          "per-phase decision chain"
+          "per-phase decision chain",
+          "iteration artifact references",
+          "state size guard result"
         ],
         "goalWindow": {
           "required": true,
@@ -824,7 +836,9 @@
           "blockerPolicy",
           "repairPolicy",
           "releaseDecision",
-          "decisionChain"
+          "decisionChain",
+          "artifactIndex",
+          "stateSizeGuard"
         ],
         "stopPolicies": [
           "goal_reached",
@@ -849,7 +863,9 @@
           "command output",
           "coverage matrix status",
           "repair verification evidence",
-          "per-phase decision chain"
+          "per-phase decision chain",
+          "iteration artifact references",
+          "state size guard result"
         ],
         "goalWindow": {
           "required": true,
@@ -1053,7 +1069,9 @@
           "blockerPolicy",
           "repairPolicy",
           "releaseDecision",
-          "decisionChain"
+          "decisionChain",
+          "artifactIndex",
+          "stateSizeGuard"
         ],
         "stopPolicies": [
           "flow_passes",
@@ -1080,7 +1098,9 @@
           "step validation matrix",
           "coverage matrix status",
           "repair verification evidence",
-          "per-phase decision chain"
+          "per-phase decision chain",
+          "iteration artifact references",
+          "state size guard result"
         ],
         "goalWindow": {
           "required": true,

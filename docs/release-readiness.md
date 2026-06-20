@@ -148,6 +148,10 @@ Each Codex loop plan must define:
 - State artifact: `data/<agent-domain>/<projectId>/loop-state.json`.
 - Status artifact: `data/<agent-domain>/<projectId>/current-status.md`.
 - Evidence root: `data/<agent-domain>/<projectId>/evidence/`.
+- Summary state only: `loop-state.json` stores compact counters, status, blocker, next action, decision IDs, artifact paths, bounded evidence snippets, and never full product API responses.
+- Iteration artifacts: large release decisions, risk registers, logs, traces, screenshots, stdout/stderr, and evidence bundles are externalized to per-iteration artifacts and referenced from state.
+- JSONL summary events: loop logs record event type, attempt, timestamp, compact release decision, compact counters, blocker, and next action, not full result payloads.
+- Resume and state size guard: loops resume from the persisted attempt and product-native evidence store after restart, and must compact or externalize state before a state write exceeds its configured size budget.
 
 If the target project cannot persist these artifacts, the agent must report the same fields in chat and stop on missing evidence rather than claiming release readiness.
 
