@@ -556,7 +556,11 @@ function pickLatestDecision(raw) {
   const data = unwrapData(raw);
   const items = Array.isArray(data) ? data : data?.items ?? data?.decisions ?? [];
   if (!items.length) return undefined;
-  return items[0];
+  return [...items].sort((left, right) => decisionTimestamp(right) - decisionTimestamp(left))[0];
+}
+
+function decisionTimestamp(decision) {
+  return Date.parse(decision?.generatedAt ?? decision?.createdAt ?? decision?.updatedAt ?? "") || 0;
 }
 
 function compactDecision(decision) {
