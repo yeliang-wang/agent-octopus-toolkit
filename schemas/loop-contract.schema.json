@@ -11,6 +11,9 @@
     "cadenceModes",
     "iterationEvidence",
     "goalWindow",
+    "coverageMatrix",
+    "repairPolicy",
+    "decisionChain",
     "evidenceRequired",
     "confirmationGatesPreserved"
   ],
@@ -70,6 +73,78 @@
         "finalGoalRequired": { "type": "boolean" },
         "acceptanceCriteriaRequired": { "type": "boolean" },
         "finalDecisionRequired": { "type": "boolean" }
+      }
+    },
+    "coverageMatrix": {
+      "type": "object",
+      "required": [
+        "required",
+        "fields",
+        "statusValues",
+        "minimumRows",
+        "repairRequiredOnRepeatBlocker"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "fields": {
+          "type": "array",
+          "minItems": 6,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "statusValues": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]*$"
+          }
+        },
+        "minimumRows": { "type": "integer", "minimum": 1 },
+        "repairRequiredOnRepeatBlocker": { "type": "boolean" }
+      }
+    },
+    "repairPolicy": {
+      "type": "object",
+      "required": [
+        "required",
+        "repeatedBlockerThreshold",
+        "actions",
+        "stopOnUnrepairable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "repeatedBlockerThreshold": { "type": "integer", "minimum": 1 },
+        "actions": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_]*$"
+          }
+        },
+        "stopOnUnrepairable": { "type": "boolean" }
+      }
+    },
+    "decisionChain": {
+      "type": "object",
+      "required": [
+        "required",
+        "fields",
+        "perPhaseRequired",
+        "printRequired"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "fields": {
+          "type": "array",
+          "minItems": 6,
+          "items": { "type": "string", "minLength": 3 }
+        },
+        "perPhaseRequired": { "type": "boolean" },
+        "printRequired": { "type": "boolean" }
       }
     },
     "evidenceRequired": { "type": "boolean" },

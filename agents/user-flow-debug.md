@@ -121,6 +121,13 @@ loopState:
   acceptanceCriteria:
   reportCadence:
   finalDecision:
+  coverageMatrix:
+  iterationPlan:
+  evidenceMap:
+  blockerPolicy:
+  repairPolicy:
+  releaseDecision:
+  decisionChain:
   runTarget:
   dashboardEntry:
   runId:
@@ -134,6 +141,36 @@ loopState:
   nextAction:
   stopCondition:
 ```
+
+## Release Coverage Matrix Loop
+
+When a loop is tied to release readiness, production readiness, GA, RC, or a product-grade goal, convert the goal into a release coverage matrix before running or resuming the loop. The matrix prevents a loop from becoming service keepalive or repeated single-path reruns.
+
+The loop state must include:
+
+- `coverageMatrix`: rows for product capabilities, scenarios, connected projects or systems, required evidence, current status, blocker, and next repair action.
+- `iterationPlan`: which matrix rows this iteration will cover and why.
+- `evidenceMap`: links from each matrix row to logs, screenshots, API responses, SCM refs, CI/CD runs, product evidence, or other real artifacts.
+- `blockerPolicy`: whether to stop immediately, continue evidence collection, or enter repair mode for each blocker class.
+- `repairPolicy`: diagnosis, productized repair, verification, escalation, and blocked-stop rules.
+- `releaseDecision`: the current release decision from product-native APIs when available, otherwise the agent's explicit `GO`, `CONDITIONAL-GO`, `NO-GO`, or `BLOCKED` decision.
+- `decisionChain`: the 阶段决策链 printed for every phase, including evidence used, rule applied, options considered, selected decision, rationale, rejected alternatives when relevant, and next action.
+
+Required matrix status values are `PASS`, `FAIL`, `NOT_RUN`, `NOT_APPLICABLE`, and `BLOCKED`. A repeated blocker may not be handled by simply rerunning the same command. If the same blocker appears in consecutive iterations, switch to diagnosis and repair mode; if repair is outside current permissions or product boundaries, stop as `BLOCKED` or `NO-GO` and print the decision chain.
+
+Every phase report must print the decision chain, not only the final result:
+
+```text
+phase:
+evidence:
+rule:
+options:
+decision:
+rationale:
+nextAction:
+```
+
+Do not claim release progress from health checks alone. Health checks can be one row in the matrix, but release progress requires coverage of the product capabilities and scenarios named in the matrix.
 
 Each loop iteration must follow:
 

@@ -37,6 +37,7 @@ PRODUCTION_RELEASE_RULE_PHRASES = [
     "NO-GO",
 ]
 LOOP_GOAL_WINDOW_SECTION = "Loop Goal Window"
+RELEASE_COVERAGE_MATRIX_SECTION = "Release Coverage Matrix Loop"
 LOOP_GOAL_WINDOW_FIELDS = [
     "finalGoal",
     "phaseGoals",
@@ -44,6 +45,15 @@ LOOP_GOAL_WINDOW_FIELDS = [
     "acceptanceCriteria",
     "reportCadence",
     "finalDecision",
+]
+RELEASE_COVERAGE_FIELDS = [
+    "coverageMatrix",
+    "iterationPlan",
+    "evidenceMap",
+    "blockerPolicy",
+    "repairPolicy",
+    "releaseDecision",
+    "decisionChain",
 ]
 NON_PRODUCTION_RELEASE_EVIDENCE_TOOL = "non-production-release-evidence"
 NON_PRODUCTION_RELEASE_EVIDENCE_FORBIDDEN = (
@@ -227,7 +237,7 @@ def validate_string_list(path: Path, value: object, key: str, min_items: int = 1
 def validate_loop_contract(path: Path, manifest: dict) -> None:
     loop_contract = manifest["loopContract"]
     require(isinstance(loop_contract, dict), f"{rel(path)}: loopContract must be an object")
-    for key in ["enabled", "inputs", "stateFields", "stopPolicies", "cadenceModes", "iterationEvidence", "goalWindow", "evidenceRequired", "confirmationGatesPreserved"]:
+    for key in ["enabled", "inputs", "stateFields", "stopPolicies", "cadenceModes", "iterationEvidence", "goalWindow", "coverageMatrix", "repairPolicy", "decisionChain", "evidenceRequired", "confirmationGatesPreserved"]:
         require(key in loop_contract, f"{rel(path)}: loopContract.{key} is required")
     require(loop_contract["enabled"] is True, f"{rel(path)}: loopContract.enabled must be true for packaged agents")
     require(loop_contract["evidenceRequired"] is True, f"{rel(path)}: loopContract.evidenceRequired must be true")
@@ -245,6 +255,10 @@ def validate_loop_contract(path: Path, manifest: dict) -> None:
         require(required_field in state_fields, f"{rel(path)}: loopContract.stateFields missing goal window field {required_field}")
     for required_input in ["finalGoal", "phaseGoals", "acceptanceCriteria", "reportCadence", "finalDecision"]:
         require(required_input in loop_inputs, f"{rel(path)}: loopContract.inputs missing goal window input {required_input}")
+    for required_field in RELEASE_COVERAGE_FIELDS:
+        require(required_field in state_fields, f"{rel(path)}: loopContract.stateFields missing release coverage field {required_field}")
+    for required_input in RELEASE_COVERAGE_FIELDS:
+        require(required_input in loop_inputs, f"{rel(path)}: loopContract.inputs missing release coverage input {required_input}")
     goal_window = loop_contract["goalWindow"]
     require(isinstance(goal_window, dict), f"{rel(path)}: loopContract.goalWindow must be an object")
     for key in ["required", "fields", "phaseGoalRequired", "finalGoalRequired", "acceptanceCriteriaRequired", "finalDecisionRequired"]:
@@ -257,6 +271,39 @@ def validate_loop_contract(path: Path, manifest: dict) -> None:
     goal_window_fields = validate_string_list(path, goal_window["fields"], "loopContract.goalWindow.fields", min_items=6)
     for required_field in LOOP_GOAL_WINDOW_FIELDS:
         require(required_field in goal_window_fields, f"{rel(path)}: loopContract.goalWindow.fields missing {required_field}")
+    coverage_matrix = loop_contract["coverageMatrix"]
+    require(isinstance(coverage_matrix, dict), f"{rel(path)}: loopContract.coverageMatrix must be an object")
+    for key in ["required", "fields", "statusValues", "minimumRows", "repairRequiredOnRepeatBlocker"]:
+        require(key in coverage_matrix, f"{rel(path)}: loopContract.coverageMatrix.{key} is required")
+    require(coverage_matrix["required"] is True, f"{rel(path)}: loopContract.coverageMatrix.required must be true")
+    require(coverage_matrix["repairRequiredOnRepeatBlocker"] is True, f"{rel(path)}: loopContract.coverageMatrix.repairRequiredOnRepeatBlocker must be true")
+    require(isinstance(coverage_matrix["minimumRows"], int) and coverage_matrix["minimumRows"] >= 1, f"{rel(path)}: loopContract.coverageMatrix.minimumRows must be >= 1")
+    coverage_fields = validate_string_list(path, coverage_matrix["fields"], "loopContract.coverageMatrix.fields", min_items=6)
+    for required_field in ["capability", "scenario", "requiredEvidence", "status", "blocker", "nextRepairAction"]:
+        require(required_field in coverage_fields, f"{rel(path)}: loopContract.coverageMatrix.fields missing {required_field}")
+    status_values = validate_string_list(path, coverage_matrix["statusValues"], "loopContract.coverageMatrix.statusValues", min_items=4)
+    for required_status in ["PASS", "FAIL", "NOT_RUN", "BLOCKED"]:
+        require(required_status in status_values, f"{rel(path)}: loopContract.coverageMatrix.statusValues missing {required_status}")
+    repair_policy = loop_contract["repairPolicy"]
+    require(isinstance(repair_policy, dict), f"{rel(path)}: loopContract.repairPolicy must be an object")
+    for key in ["required", "repeatedBlockerThreshold", "actions", "stopOnUnrepairable"]:
+        require(key in repair_policy, f"{rel(path)}: loopContract.repairPolicy.{key} is required")
+    require(repair_policy["required"] is True, f"{rel(path)}: loopContract.repairPolicy.required must be true")
+    require(isinstance(repair_policy["repeatedBlockerThreshold"], int) and repair_policy["repeatedBlockerThreshold"] >= 1, f"{rel(path)}: loopContract.repairPolicy.repeatedBlockerThreshold must be >= 1")
+    repair_actions = validate_string_list(path, repair_policy["actions"], "loopContract.repairPolicy.actions", min_items=3)
+    for required_action in ["diagnose", "repair", "verify"]:
+        require(required_action in repair_actions, f"{rel(path)}: loopContract.repairPolicy.actions missing {required_action}")
+    require(repair_policy["stopOnUnrepairable"] is True, f"{rel(path)}: loopContract.repairPolicy.stopOnUnrepairable must be true")
+    decision_chain = loop_contract["decisionChain"]
+    require(isinstance(decision_chain, dict), f"{rel(path)}: loopContract.decisionChain must be an object")
+    for key in ["required", "fields", "perPhaseRequired", "printRequired"]:
+        require(key in decision_chain, f"{rel(path)}: loopContract.decisionChain.{key} is required")
+    require(decision_chain["required"] is True, f"{rel(path)}: loopContract.decisionChain.required must be true")
+    require(decision_chain["perPhaseRequired"] is True, f"{rel(path)}: loopContract.decisionChain.perPhaseRequired must be true")
+    require(decision_chain["printRequired"] is True, f"{rel(path)}: loopContract.decisionChain.printRequired must be true")
+    decision_chain_fields = validate_string_list(path, decision_chain["fields"], "loopContract.decisionChain.fields", min_items=6)
+    for required_field in ["phase", "evidence", "rule", "options", "decision", "nextAction"]:
+        require(required_field in decision_chain_fields, f"{rel(path)}: loopContract.decisionChain.fields missing {required_field}")
     for policy in stop_policies:
         require(bool(re.match(r"^[a-z0-9][a-z0-9_]*$", policy)), f"{rel(path)}: invalid loop stop policy {policy!r}")
 
@@ -311,6 +358,7 @@ def validate_agent_files(path: Path, manifest: dict) -> None:
     combined_text = source.read_text(encoding="utf-8") + "\n" + codex.read_text(encoding="utf-8")
     require(f"## {PRODUCTION_RELEASE_RULE_SECTION}" in markdown_body, f"{rel(source)}: toolkit-wide production release rule section missing")
     require(f"## {LOOP_GOAL_WINDOW_SECTION}" in markdown_body, f"{rel(source)}: loop goal window section missing")
+    require(f"## {RELEASE_COVERAGE_MATRIX_SECTION}" in markdown_body, f"{rel(source)}: release coverage matrix loop section missing")
     for phrase in manifest["validation"]["requiredPhrases"]:
         require(phrase in combined_text, f"{rel(path)}: required phrase missing across source/distribution: {phrase}")
 

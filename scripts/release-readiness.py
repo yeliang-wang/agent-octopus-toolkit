@@ -23,6 +23,7 @@ PLUGIN_DIR = REPO_ROOT / "plugins"
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 PRODUCTION_RELEASE_RULE_SECTION = "Toolkit-Wide Production Release Rule"
 LOOP_GOAL_WINDOW_SECTION = "Loop Goal Window"
+RELEASE_COVERAGE_MATRIX_SECTION = "Release Coverage Matrix Loop"
 LOOP_GOAL_WINDOW_FIELDS = {
     "finalGoal",
     "phaseGoals",
@@ -32,6 +33,15 @@ LOOP_GOAL_WINDOW_FIELDS = {
     "finalDecision",
 }
 LOOP_GOAL_WINDOW_INPUTS = LOOP_GOAL_WINDOW_FIELDS - {"currentPhase"}
+RELEASE_COVERAGE_FIELDS = {
+    "coverageMatrix",
+    "iterationPlan",
+    "evidenceMap",
+    "blockerPolicy",
+    "repairPolicy",
+    "releaseDecision",
+    "decisionChain",
+}
 NON_PRODUCTION_RELEASE_EVIDENCE_TOOL = "non-production-release-evidence"
 NON_PRODUCTION_RELEASE_EVIDENCE_FORBIDDEN = (
     "Use mock, fake, stub, simulator, fixture-only, demo-only, smoke-only, "
@@ -96,6 +106,9 @@ def loop_plan_checks() -> list[dict[str, Any]]:
         loop_contract = manifest.get("loopContract", {})
         codex_goal = manifest.get("runtimeAdapters", {}).get("codexGoal", {})
         goal_window = loop_contract.get("goalWindow", {})
+        coverage_matrix = loop_contract.get("coverageMatrix", {})
+        repair_policy = loop_contract.get("repairPolicy", {})
+        decision_chain = loop_contract.get("decisionChain", {})
         required_state = {"goal", "blocker", "nextAction", "stopCondition"}
         state_fields = set(loop_contract.get("stateFields", []))
         inputs = set(loop_contract.get("inputs", []))
@@ -114,6 +127,15 @@ def loop_plan_checks() -> list[dict[str, Any]]:
         add(checks, f"{agent_id}:goal-window-fields", LOOP_GOAL_WINDOW_FIELDS.issubset(goal_window_fields), ", ".join(sorted(goal_window_fields)))
         add(checks, f"{agent_id}:goal-window-state", LOOP_GOAL_WINDOW_FIELDS.issubset(state_fields), ", ".join(sorted(state_fields)))
         add(checks, f"{agent_id}:goal-window-inputs", LOOP_GOAL_WINDOW_INPUTS.issubset(inputs), ", ".join(sorted(inputs)))
+        add(checks, f"{agent_id}:coverage-state", RELEASE_COVERAGE_FIELDS.issubset(state_fields), ", ".join(sorted(state_fields)))
+        add(checks, f"{agent_id}:coverage-inputs", RELEASE_COVERAGE_FIELDS.issubset(inputs), ", ".join(sorted(inputs)))
+        add(checks, f"{agent_id}:coverage-matrix-required", isinstance(coverage_matrix, dict) and coverage_matrix.get("required") is True)
+        add(checks, f"{agent_id}:coverage-matrix-fields", isinstance(coverage_matrix, dict) and {"capability", "scenario", "requiredEvidence", "status", "blocker", "nextRepairAction"}.issubset(set(coverage_matrix.get("fields", []))))
+        add(checks, f"{agent_id}:coverage-matrix-status", isinstance(coverage_matrix, dict) and {"PASS", "FAIL", "NOT_RUN", "BLOCKED"}.issubset(set(coverage_matrix.get("statusValues", []))))
+        add(checks, f"{agent_id}:repair-policy-required", isinstance(repair_policy, dict) and repair_policy.get("required") is True)
+        add(checks, f"{agent_id}:repair-policy-actions", isinstance(repair_policy, dict) and {"diagnose", "repair", "verify"}.issubset(set(repair_policy.get("actions", []))))
+        add(checks, f"{agent_id}:decision-chain-required", isinstance(decision_chain, dict) and decision_chain.get("required") is True and decision_chain.get("perPhaseRequired") is True and decision_chain.get("printRequired") is True)
+        add(checks, f"{agent_id}:decision-chain-fields", isinstance(decision_chain, dict) and {"phase", "evidence", "rule", "options", "decision", "nextAction"}.issubset(set(decision_chain.get("fields", []))))
         add(checks, f"{agent_id}:artifact-plan", all(item.startswith("data/") for item in artifacts), ", ".join(artifacts))
         add(checks, f"{agent_id}:evidence-and-gates", loop_contract.get("evidenceRequired") is True and loop_contract.get("confirmationGatesPreserved") is True)
     return checks
@@ -129,10 +151,12 @@ def production_release_rule_checks() -> list[dict[str, Any]]:
         validation = manifest.get("validation", {})
         add(checks, f"{agent_id}:markdown-rule", f"## {PRODUCTION_RELEASE_RULE_SECTION}" in markdown)
         add(checks, f"{agent_id}:markdown-goal-window", f"## {LOOP_GOAL_WINDOW_SECTION}" in markdown)
+        add(checks, f"{agent_id}:markdown-release-coverage-matrix", f"## {RELEASE_COVERAGE_MATRIX_SECTION}" in markdown)
         add(checks, f"{agent_id}:disallowed-tool", NON_PRODUCTION_RELEASE_EVIDENCE_TOOL in manifest.get("native", {}).get("disallowedTools", []))
         add(checks, f"{agent_id}:forbidden-boundary", NON_PRODUCTION_RELEASE_EVIDENCE_FORBIDDEN in manifest.get("boundaries", {}).get("forbidden", []))
         add(checks, f"{agent_id}:required-section", PRODUCTION_RELEASE_RULE_SECTION in validation.get("requiredSections", []))
         add(checks, f"{agent_id}:goal-window-required-section", LOOP_GOAL_WINDOW_SECTION in validation.get("requiredSections", []))
+        add(checks, f"{agent_id}:coverage-required-section", RELEASE_COVERAGE_MATRIX_SECTION in validation.get("requiredSections", []))
         add(checks, f"{agent_id}:required-phrase", "Smoke checks may prove connectivity only" in validation.get("requiredPhrases", []))
         add(checks, f"{agent_id}:goal-window-required-phrases", all(phrase in validation.get("requiredPhrases", []) for phrase in ["finalGoal", "phaseGoals", "acceptanceCriteria", "finalDecision"]))
     return checks
@@ -150,6 +174,8 @@ def docs_checks() -> list[dict[str, Any]]:
     add(checks, "release-doc-production-release-rule", release_doc.exists() and PRODUCTION_RELEASE_RULE_SECTION in release_doc.read_text(encoding="utf-8"))
     add(checks, "readme-loop-goal-window", LOOP_GOAL_WINDOW_SECTION in readme)
     add(checks, "release-doc-loop-goal-window", release_doc.exists() and LOOP_GOAL_WINDOW_SECTION in release_doc.read_text(encoding="utf-8"))
+    add(checks, "readme-release-coverage-matrix", RELEASE_COVERAGE_MATRIX_SECTION in readme)
+    add(checks, "release-doc-release-coverage-matrix", release_doc.exists() and RELEASE_COVERAGE_MATRIX_SECTION in release_doc.read_text(encoding="utf-8"))
     return checks
 
 

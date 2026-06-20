@@ -57,7 +57,10 @@
         "assertion results",
         "evidence references",
         "self-evolution proposal report",
-        "pass/fail verdict"
+        "pass/fail verdict",
+        "coverage matrix result",
+        "repair verification result",
+        "per-phase decision chain"
       ],
       "loopContract": {
         "enabled": true,
@@ -73,7 +76,14 @@
           "phaseGoals",
           "acceptanceCriteria",
           "reportCadence",
-          "finalDecision"
+          "finalDecision",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stateFields": [
           "goal",
@@ -93,7 +103,14 @@
           "evolutionCandidates",
           "blocker",
           "nextAction",
-          "stopCondition"
+          "stopCondition",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stopPolicies": [
           "assertions_pass",
@@ -102,7 +119,9 @@
           "critical_blocker",
           "pending_prompt_confirmation",
           "pending_self_evolution_approval",
-          "explicit_user_stop"
+          "explicit_user_stop",
+          "coverage_matrix_complete",
+          "repeated_blocker_requires_repair"
         ],
         "cadenceModes": [
           "continuous",
@@ -116,7 +135,10 @@
           "service responses",
           "artifacts",
           "logs",
-          "user corrections"
+          "user corrections",
+          "coverage matrix status",
+          "repair verification evidence",
+          "per-phase decision chain"
         ],
         "goalWindow": {
           "required": true,
@@ -132,6 +154,53 @@
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
           "finalDecisionRequired": true
+        },
+        "coverageMatrix": {
+          "required": true,
+          "fields": [
+            "capability",
+            "scenario",
+            "connectedProject",
+            "requiredEvidence",
+            "status",
+            "blocker",
+            "nextRepairAction"
+          ],
+          "statusValues": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE",
+            "BLOCKED"
+          ],
+          "minimumRows": 1,
+          "repairRequiredOnRepeatBlocker": true
+        },
+        "repairPolicy": {
+          "required": true,
+          "repeatedBlockerThreshold": 2,
+          "actions": [
+            "diagnose",
+            "repair",
+            "verify",
+            "escalate",
+            "stop_blocked"
+          ],
+          "stopOnUnrepairable": true
+        },
+        "decisionChain": {
+          "required": true,
+          "fields": [
+            "phase",
+            "evidence",
+            "rule",
+            "options",
+            "decision",
+            "rationale",
+            "nextAction"
+          ],
+          "perPhaseRequired": true,
+          "printRequired": true
         }
       },
       "runtimeAdapters": {
@@ -227,7 +296,10 @@
         "improvement workflow result",
         "user-flow results",
         "screenshots",
-        "report"
+        "report",
+        "coverage matrix result",
+        "repair verification result",
+        "per-phase decision chain"
       ],
       "loopContract": {
         "enabled": true,
@@ -245,7 +317,14 @@
           "phaseGoals",
           "acceptanceCriteria",
           "reportCadence",
-          "finalDecision"
+          "finalDecision",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stateFields": [
           "goal",
@@ -265,7 +344,14 @@
           "reviewState",
           "blocker",
           "nextAction",
-          "stopCondition"
+          "stopCondition",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stopPolicies": [
           "goal_proven",
@@ -274,7 +360,9 @@
           "deadline",
           "missing_readiness",
           "unsafe_protected_path_mutation",
-          "explicit_user_stop"
+          "explicit_user_stop",
+          "coverage_matrix_complete",
+          "repeated_blocker_requires_repair"
         ],
         "cadenceModes": [
           "always_on_interval",
@@ -287,7 +375,10 @@
           "UI/API/MCP/CLI calls",
           "run artifacts",
           "product gap evidence",
-          "review closure evidence"
+          "review closure evidence",
+          "coverage matrix status",
+          "repair verification evidence",
+          "per-phase decision chain"
         ],
         "goalWindow": {
           "required": true,
@@ -303,6 +394,53 @@
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
           "finalDecisionRequired": true
+        },
+        "coverageMatrix": {
+          "required": true,
+          "fields": [
+            "capability",
+            "scenario",
+            "connectedProject",
+            "requiredEvidence",
+            "status",
+            "blocker",
+            "nextRepairAction"
+          ],
+          "statusValues": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE",
+            "BLOCKED"
+          ],
+          "minimumRows": 1,
+          "repairRequiredOnRepeatBlocker": true
+        },
+        "repairPolicy": {
+          "required": true,
+          "repeatedBlockerThreshold": 2,
+          "actions": [
+            "diagnose",
+            "repair",
+            "verify",
+            "escalate",
+            "stop_blocked"
+          ],
+          "stopOnUnrepairable": true
+        },
+        "decisionChain": {
+          "required": true,
+          "fields": [
+            "phase",
+            "evidence",
+            "rule",
+            "options",
+            "decision",
+            "rationale",
+            "nextAction"
+          ],
+          "perPhaseRequired": true,
+          "printRequired": true
         }
       },
       "runtimeAdapters": {
@@ -404,7 +542,10 @@
         "release evidence bundle",
         "scenario matrix result",
         "risk register",
-        "GO/CONDITIONAL-GO/NO-GO decision"
+        "GO/CONDITIONAL-GO/NO-GO decision",
+        "coverage matrix result",
+        "repair verification result",
+        "per-phase decision chain"
       ],
       "loopContract": {
         "enabled": true,
@@ -420,7 +561,14 @@
           "finalGoal",
           "phaseGoals",
           "reportCadence",
-          "finalDecision"
+          "finalDecision",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stateFields": [
           "goal",
@@ -440,7 +588,14 @@
           "decision",
           "blocker",
           "nextAction",
-          "stopCondition"
+          "stopCondition",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stopPolicies": [
           "product_native_go",
@@ -451,7 +606,9 @@
           "failed_readiness",
           "failed_precheck",
           "release_decision",
-          "explicit_user_stop"
+          "explicit_user_stop",
+          "coverage_matrix_complete",
+          "repeated_blocker_requires_repair"
         ],
         "cadenceModes": [
           "continuous",
@@ -465,7 +622,10 @@
           "traffic counts",
           "CI/CD status",
           "release evidence bundle",
-          "logs and artifacts"
+          "logs and artifacts",
+          "coverage matrix status",
+          "repair verification evidence",
+          "per-phase decision chain"
         ],
         "goalWindow": {
           "required": true,
@@ -481,6 +641,53 @@
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
           "finalDecisionRequired": true
+        },
+        "coverageMatrix": {
+          "required": true,
+          "fields": [
+            "capability",
+            "scenario",
+            "connectedProject",
+            "requiredEvidence",
+            "status",
+            "blocker",
+            "nextRepairAction"
+          ],
+          "statusValues": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE",
+            "BLOCKED"
+          ],
+          "minimumRows": 1,
+          "repairRequiredOnRepeatBlocker": true
+        },
+        "repairPolicy": {
+          "required": true,
+          "repeatedBlockerThreshold": 2,
+          "actions": [
+            "diagnose",
+            "repair",
+            "verify",
+            "escalate",
+            "stop_blocked"
+          ],
+          "stopOnUnrepairable": true
+        },
+        "decisionChain": {
+          "required": true,
+          "fields": [
+            "phase",
+            "evidence",
+            "rule",
+            "options",
+            "decision",
+            "rationale",
+            "nextAction"
+          ],
+          "perPhaseRequired": true,
+          "printRequired": true
         }
       },
       "runtimeAdapters": {
@@ -566,7 +773,10 @@
         "iteration report",
         "sync result",
         "commit and push summary",
-        "CI or merge request status"
+        "CI or merge request status",
+        "coverage matrix result",
+        "repair verification result",
+        "per-phase decision chain"
       ],
       "loopContract": {
         "enabled": true,
@@ -582,7 +792,14 @@
           "phaseGoals",
           "acceptanceCriteria",
           "reportCadence",
-          "finalDecision"
+          "finalDecision",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stateFields": [
           "goal",
@@ -600,7 +817,14 @@
           "lastEvidence",
           "blocker",
           "nextAction",
-          "stopCondition"
+          "stopCondition",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stopPolicies": [
           "goal_reached",
@@ -608,7 +832,9 @@
           "ci_terminal_failure",
           "maximum_attempts",
           "deadline",
-          "explicit_user_stop"
+          "explicit_user_stop",
+          "coverage_matrix_complete",
+          "repeated_blocker_requires_repair"
         ],
         "cadenceModes": [
           "continuous",
@@ -620,7 +846,10 @@
           "git log",
           "remote ref state",
           "CI or change request status",
-          "command output"
+          "command output",
+          "coverage matrix status",
+          "repair verification evidence",
+          "per-phase decision chain"
         ],
         "goalWindow": {
           "required": true,
@@ -636,6 +865,53 @@
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
           "finalDecisionRequired": true
+        },
+        "coverageMatrix": {
+          "required": true,
+          "fields": [
+            "capability",
+            "scenario",
+            "connectedProject",
+            "requiredEvidence",
+            "status",
+            "blocker",
+            "nextRepairAction"
+          ],
+          "statusValues": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE",
+            "BLOCKED"
+          ],
+          "minimumRows": 1,
+          "repairRequiredOnRepeatBlocker": true
+        },
+        "repairPolicy": {
+          "required": true,
+          "repeatedBlockerThreshold": 2,
+          "actions": [
+            "diagnose",
+            "repair",
+            "verify",
+            "escalate",
+            "stop_blocked"
+          ],
+          "stopOnUnrepairable": true
+        },
+        "decisionChain": {
+          "required": true,
+          "fields": [
+            "phase",
+            "evidence",
+            "rule",
+            "options",
+            "decision",
+            "rationale",
+            "nextAction"
+          ],
+          "perPhaseRequired": true,
+          "printRequired": true
         }
       },
       "runtimeAdapters": {
@@ -724,7 +1000,10 @@
         "artifact summary",
         "runtime flow type",
         "step validation matrix",
-        "fix summary"
+        "fix summary",
+        "coverage matrix result",
+        "repair verification result",
+        "per-phase decision chain"
       ],
       "loopContract": {
         "enabled": true,
@@ -741,7 +1020,14 @@
           "phaseGoals",
           "acceptanceCriteria",
           "reportCadence",
-          "finalDecision"
+          "finalDecision",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stateFields": [
           "goal",
@@ -760,7 +1046,14 @@
           "lastFix",
           "blocker",
           "nextAction",
-          "stopCondition"
+          "stopCondition",
+          "coverageMatrix",
+          "iterationPlan",
+          "evidenceMap",
+          "blockerPolicy",
+          "repairPolicy",
+          "releaseDecision",
+          "decisionChain"
         ],
         "stopPolicies": [
           "flow_passes",
@@ -769,7 +1062,9 @@
           "ambiguous_ui_contract",
           "required_user_choice",
           "fix_policy_boundary",
-          "explicit_user_stop"
+          "explicit_user_stop",
+          "coverage_matrix_complete",
+          "repeated_blocker_requires_repair"
         ],
         "cadenceModes": [
           "continuous",
@@ -782,7 +1077,10 @@
           "runtime responses",
           "artifact files",
           "logs",
-          "step validation matrix"
+          "step validation matrix",
+          "coverage matrix status",
+          "repair verification evidence",
+          "per-phase decision chain"
         ],
         "goalWindow": {
           "required": true,
@@ -798,6 +1096,53 @@
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
           "finalDecisionRequired": true
+        },
+        "coverageMatrix": {
+          "required": true,
+          "fields": [
+            "capability",
+            "scenario",
+            "connectedProject",
+            "requiredEvidence",
+            "status",
+            "blocker",
+            "nextRepairAction"
+          ],
+          "statusValues": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN",
+            "NOT_APPLICABLE",
+            "BLOCKED"
+          ],
+          "minimumRows": 1,
+          "repairRequiredOnRepeatBlocker": true
+        },
+        "repairPolicy": {
+          "required": true,
+          "repeatedBlockerThreshold": 2,
+          "actions": [
+            "diagnose",
+            "repair",
+            "verify",
+            "escalate",
+            "stop_blocked"
+          ],
+          "stopOnUnrepairable": true
+        },
+        "decisionChain": {
+          "required": true,
+          "fields": [
+            "phase",
+            "evidence",
+            "rule",
+            "options",
+            "decision",
+            "rationale",
+            "nextAction"
+          ],
+          "perPhaseRequired": true,
+          "printRequired": true
         }
       },
       "runtimeAdapters": {

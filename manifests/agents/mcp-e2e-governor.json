@@ -69,7 +69,10 @@
     "assertion results",
     "evidence references",
     "self-evolution proposal report",
-    "pass/fail verdict"
+    "pass/fail verdict",
+    "coverage matrix result",
+    "repair verification result",
+    "per-phase decision chain"
   ],
   "evidence": [
     "MCP responses",
@@ -78,7 +81,10 @@
     "artifacts",
     "logs",
     "assertion results",
-    "user corrections"
+    "user corrections",
+    "coverage matrix status",
+    "repair verification evidence",
+    "per-phase decision chain"
   ],
   "confirmationGates": [
     "exact E2E prompt",
@@ -108,7 +114,14 @@
       "phaseGoals",
       "acceptanceCriteria",
       "reportCadence",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stateFields": [
       "goal",
@@ -128,7 +141,14 @@
       "evolutionCandidates",
       "blocker",
       "nextAction",
-      "stopCondition"
+      "stopCondition",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stopPolicies": [
       "assertions_pass",
@@ -137,7 +157,9 @@
       "critical_blocker",
       "pending_prompt_confirmation",
       "pending_self_evolution_approval",
-      "explicit_user_stop"
+      "explicit_user_stop",
+      "coverage_matrix_complete",
+      "repeated_blocker_requires_repair"
     ],
     "cadenceModes": [
       "continuous",
@@ -151,7 +173,10 @@
       "service responses",
       "artifacts",
       "logs",
-      "user corrections"
+      "user corrections",
+      "coverage matrix status",
+      "repair verification evidence",
+      "per-phase decision chain"
     ],
     "goalWindow": {
       "required": true,
@@ -167,6 +192,53 @@
       "finalGoalRequired": true,
       "acceptanceCriteriaRequired": true,
       "finalDecisionRequired": true
+    },
+    "coverageMatrix": {
+      "required": true,
+      "fields": [
+        "capability",
+        "scenario",
+        "connectedProject",
+        "requiredEvidence",
+        "status",
+        "blocker",
+        "nextRepairAction"
+      ],
+      "statusValues": [
+        "PASS",
+        "FAIL",
+        "NOT_RUN",
+        "NOT_APPLICABLE",
+        "BLOCKED"
+      ],
+      "minimumRows": 1,
+      "repairRequiredOnRepeatBlocker": true
+    },
+    "repairPolicy": {
+      "required": true,
+      "repeatedBlockerThreshold": 2,
+      "actions": [
+        "diagnose",
+        "repair",
+        "verify",
+        "escalate",
+        "stop_blocked"
+      ],
+      "stopOnUnrepairable": true
+    },
+    "decisionChain": {
+      "required": true,
+      "fields": [
+        "phase",
+        "evidence",
+        "rule",
+        "options",
+        "decision",
+        "rationale",
+        "nextAction"
+      ],
+      "perPhaseRequired": true,
+      "printRequired": true
     }
   },
   "runtimeAdapters": {
@@ -196,7 +268,8 @@
       "Project Profile Extensions",
       "Self-Evolution Proposal Gate",
       "Final Report",
-      "Loop Goal Window"
+      "Loop Goal Window",
+      "Release Coverage Matrix Loop"
     ],
     "requiredPhrases": [
       "promptConfirmation",
@@ -210,7 +283,15 @@
       "finalGoal",
       "phaseGoals",
       "acceptanceCriteria",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "evidenceMap",
+      "repairPolicy",
+      "releaseDecision",
+      "repeated blocker",
+      "decisionChain",
+      "per-phase decision chain",
+      "阶段决策链"
     ]
   }
 }

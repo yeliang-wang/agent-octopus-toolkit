@@ -5,7 +5,7 @@
 | product-evolution-lab | `agents/product-evolution-lab.md` | Generic product evolution lab for material rotation, product E2E pressure, evidence submission, review closure, and improvement feedback. |
 | scm-sync-governor | `agents/scm-sync-governor.md` | Safe SCM sync, commit, push, PR/MR/CI, branch ambiguity, and conflict handling. |
 | mcp-e2e-governor | `agents/mcp-e2e-governor.md` | MCP intelligent-agent E2E lifecycle governance with code-first discovery, prompt confirmation, execution, diagnosis, controlled fixes, and self-evolution proposals. |
-| production-lifecycle-governor | `agents/production-lifecycle-governor.md` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, evolution delivery, release evidence, scenario matrix, risk register, and GO/NO-GO decisions. |
+| production-lifecycle-governor | `agents/production-lifecycle-governor.md` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, release coverage matrix, per-phase decision chain, release evidence, risk register, and GO/NO-GO decisions. |
 | user-flow-debug | `agents/user-flow-debug.md` | Real Dashboard user-flow debugging with runtime-flow discovery, screenshots, artifact checks, role validation, diagnosis, and controlled fixes. |
 
 ## Product Contracts
@@ -22,7 +22,7 @@ Each agent must have a product contract:
 
 Run `npm run validate` to check manifests, Markdown sources, Codex distributions, README/AGENT-LIST references, plugin assignments, generated catalogs, and required sections.
 
-Every manifest also declares a structured `loopContract` and `runtimeAdapters.codexGoal` plan. Use `npm run agents:goal-plan -- --agent <agent> --project-id <project> "<goal>"` to render the Codex `/goal` mapping without making the toolkit Codex-only.
+Every manifest also declares a structured `loopContract` and `runtimeAdapters.codexGoal` plan. Release-focused loops must include a release coverage matrix, evidence map, repair policy, release decision, and printed per-phase decision chain. Use `npm run agents:goal-plan -- --agent <agent> --project-id <project> "<goal>"` to render the Codex `/goal` mapping without making the toolkit Codex-only.
 
 Run `npm run release:check` before public distribution. The release gate requires package metadata, license, beta-or-better lifecycles, loop contracts, Codex goal plans, generated outputs, deterministic eval, and project-scoped Codex install drift to pass.
 

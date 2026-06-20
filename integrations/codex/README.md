@@ -10,13 +10,15 @@ Each Codex agent must be declared in `manifests/agents/<agent>.json` and assigne
 
 Codex `/goal` is supported as the outer runtime for installed Codex agents. It does not replace each agent's `Goal-Driven Loop Mode`; it keeps the objective active while the agent-owned loop contract controls cadence, state, evidence, stop policies, and confirmation gates.
 
+For release, release-readiness, GA, public-beta, production-grade, or long-running product lifecycle goals, the installed agent must expand the user's goal into a release coverage matrix before running. The plan must include `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain`; every phase report must print the 阶段决策链 with evidence, rule, options, decision, rationale, and next action.
+
 Render the adapter plan for an agent:
 
 ```bash
 npm run agents:goal-plan -- \
-  --agent mcp-e2e-governor \
+  --agent production-lifecycle-governor \
   --project-id your-project \
-  "Prove the MCP onboarding journey"
+  "Take this project through a release coverage matrix loop toward public-beta readiness"
 ```
 
 The generated Codex TOML files include a `Codex Goal Runtime Adapter` section from each agent manifest. The shared adapter guide is `integrations/codex/goal-adapter.md`.

@@ -77,7 +77,10 @@
     "improvement workflow result",
     "user-flow results",
     "screenshots",
-    "report"
+    "report",
+    "coverage matrix result",
+    "repair verification result",
+    "per-phase decision chain"
   ],
   "evidence": [
     "per-iteration evidence",
@@ -88,7 +91,10 @@
     "review screenshots",
     "evidence bundle",
     "improvement opportunity",
-    "proposal or plan"
+    "proposal or plan",
+    "coverage matrix status",
+    "repair verification evidence",
+    "per-phase decision chain"
   ],
   "confirmationGates": [
     "public material authorization",
@@ -122,7 +128,14 @@
       "phaseGoals",
       "acceptanceCriteria",
       "reportCadence",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stateFields": [
       "goal",
@@ -142,7 +155,14 @@
       "reviewState",
       "blocker",
       "nextAction",
-      "stopCondition"
+      "stopCondition",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stopPolicies": [
       "goal_proven",
@@ -151,7 +171,9 @@
       "deadline",
       "missing_readiness",
       "unsafe_protected_path_mutation",
-      "explicit_user_stop"
+      "explicit_user_stop",
+      "coverage_matrix_complete",
+      "repeated_blocker_requires_repair"
     ],
     "cadenceModes": [
       "always_on_interval",
@@ -164,7 +186,10 @@
       "UI/API/MCP/CLI calls",
       "run artifacts",
       "product gap evidence",
-      "review closure evidence"
+      "review closure evidence",
+      "coverage matrix status",
+      "repair verification evidence",
+      "per-phase decision chain"
     ],
     "goalWindow": {
       "required": true,
@@ -180,6 +205,53 @@
       "finalGoalRequired": true,
       "acceptanceCriteriaRequired": true,
       "finalDecisionRequired": true
+    },
+    "coverageMatrix": {
+      "required": true,
+      "fields": [
+        "capability",
+        "scenario",
+        "connectedProject",
+        "requiredEvidence",
+        "status",
+        "blocker",
+        "nextRepairAction"
+      ],
+      "statusValues": [
+        "PASS",
+        "FAIL",
+        "NOT_RUN",
+        "NOT_APPLICABLE",
+        "BLOCKED"
+      ],
+      "minimumRows": 1,
+      "repairRequiredOnRepeatBlocker": true
+    },
+    "repairPolicy": {
+      "required": true,
+      "repeatedBlockerThreshold": 2,
+      "actions": [
+        "diagnose",
+        "repair",
+        "verify",
+        "escalate",
+        "stop_blocked"
+      ],
+      "stopOnUnrepairable": true
+    },
+    "decisionChain": {
+      "required": true,
+      "fields": [
+        "phase",
+        "evidence",
+        "rule",
+        "options",
+        "decision",
+        "rationale",
+        "nextAction"
+      ],
+      "perPhaseRequired": true,
+      "printRequired": true
     }
   },
   "runtimeAdapters": {
@@ -210,7 +282,8 @@
       "Standard Workflow",
       "Safety Rules",
       "Final Response Shape",
-      "Loop Goal Window"
+      "Loop Goal Window",
+      "Release Coverage Matrix Loop"
     ],
     "requiredPhrases": [
       "BLOCKED: product closed loop is not ready",
@@ -224,7 +297,15 @@
       "finalGoal",
       "phaseGoals",
       "acceptanceCriteria",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "evidenceMap",
+      "repairPolicy",
+      "releaseDecision",
+      "repeated blocker",
+      "decisionChain",
+      "per-phase decision chain",
+      "阶段决策链"
     ]
   }
 }

@@ -31,7 +31,7 @@ The product goal is simple: manage agent operations as reusable product assets, 
 | `product-evolution-lab` | Generic product evolution lab for authorized materials, product E2E pressure, improvement evidence, review closure, and goal-driven loops. |
 | `scm-sync-governor` | SCM synchronization, commit, push, PR/MR/CI boundaries, and conflict handling. |
 | `mcp-e2e-governor` | MCP intelligent-agent E2E lifecycle governor: discovery, prompt confirmation, execution, diagnosis, controlled code-fix, and evidence-backed self-evolution proposals. |
-| `production-lifecycle-governor` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, evolution delivery, release evidence, scenario matrix, risk register, and GO/NO-GO decisions. |
+| `production-lifecycle-governor` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, release coverage matrix, per-phase decision chain, release evidence, risk register, and GO/NO-GO decisions. |
 | `user-flow-debug` | Real Dashboard user-flow debugging with runtime-flow discovery, screenshots, artifacts, role validation, diagnosis, and controlled fixes. |
 
 ## Plugins
@@ -116,6 +116,19 @@ Every loop-capable subagent must establish a loop goal window before starting or
 
 Agents may iterate through phase goals, but they must not claim loop completion until the final goal and acceptance criteria are proven with evidence.
 
+### Release Coverage Matrix Loop
+
+For release, release-readiness, GA, public-beta, production-grade, or long-running product lifecycle goals, the user should only need to state the target outcome. The selected subagent must turn that goal into a release coverage matrix, iteration plan, evidence map, blocker policy, repair policy, release decision, and per-phase decision chain before it starts or resumes the loop.
+
+The matrix keeps the loop tied to product behavior rather than process keepalive:
+
+- `coverageMatrix`: product capabilities, scenarios, connected projects or systems, required evidence, current status, blocker, and next repair action.
+- `evidenceMap`: product-native APIs, UI paths, SCM, CI/CD, runtime logs, artifacts, approvals, rollback checks, or release decisions backing each row.
+- `repairPolicy`: repeated blockers move from rerun into diagnosis, productized repair, verification, escalation, or `BLOCKED` / `NO-GO`.
+- `decisionChain`: every phase report prints the 阶段决策链: evidence, rule, options, decision, rationale, and next action.
+
+This means a future prompt can be short, such as `Use production-lifecycle-governor to take this project through a release coverage matrix loop toward public-beta readiness.` The agent is responsible for discovering product-specific coverage rows and printing the decision chain for each phase.
+
 ### Toolkit-Wide Production Release Rule
 
 All packaged subagents share the same release rule: when a task is product-grade, production-like, release-candidate, GA, or release-readiness work, do not use mock, fake, stub, simulator, fixture-only, demo-only, smoke-only, or chat-only evidence as production release evidence.
@@ -161,7 +174,7 @@ See `integrations/codex/goal-adapter.md` and `examples/codex-goal/` for runnable
 
 `product-evolution-lab` runs external product-evolution pressure through configured product profiles. It does not assume a specific project layout. Configure product-specific readiness, E2E, improvement, and review behavior through product-owned commands or profile data; the toolkit stores status and run evidence under `data/product-evolution-lab/`.
 
-`production-lifecycle-governor` turns the full production validation and release decision lifecycle into one reusable agent workflow. It first discovers real services, connected systems, data roots, traffic generators, lifecycle runners, LLM, SCM, and CI/CD boundaries, then executes:
+`production-lifecycle-governor` turns the full production validation and release decision lifecycle into one reusable agent workflow. It first discovers real services, connected systems, data roots, traffic generators, lifecycle runners, LLM, SCM, and CI/CD boundaries, then builds a release coverage matrix with product-native evidence requirements and a per-phase decision chain. It then executes:
 
 ```text
 readiness
@@ -170,6 +183,8 @@ readiness
   -> 用户指定时长的长稳运行
   -> 每 30 分钟汇报
   -> 产品缺口阻断与补强
+  -> release coverage matrix
+  -> 阶段决策链
   -> release evidence
   -> GO / CONDITIONAL-GO / NO-GO
 ```
@@ -206,6 +221,7 @@ It reads agent and plugin metadata from manifest/catalog files, then supports se
 | Git sync, commit, push, PR/MR, and CI actions blur into one risky operation. | `scm-sync-governor` makes each step explicit and confirmation-bound. |
 | User-flow validation bypasses the real UI. | `user-flow-debug` requires real Dashboard operation and screenshot evidence. |
 | Production validation accidentally uses mock/demo paths. | `production-lifecycle-governor` blocks product-grade claims unless real boundaries are proven. |
+| Long-running loops prove service health but miss core release scenarios. | Release coverage matrix loop requires scenario rows, evidence mapping, repair policy, and per-phase decision chains. |
 | Installed-project edits flow back without review. | Offline proposals are generated and accepted only by the toolkit maintainer. |
 
 ## What's Under The Hood
@@ -355,7 +371,7 @@ SCM 同步：
 通用产品生产生命周期：
 
 ```text
-使用 production-lifecycle-governor，基于当前项目发现真实服务、接入项目、流量发生器、LLM、SCM 和 CI/CD 配置。请清理旧固定时长脚本、stale heartbeat、历史运行数据、过期报告和临时日志；保留项目注册、连接器、规则、环境和审计。然后做 readiness、非 mock 预检，预检通过后按我指定的时长启动长稳验证，并每 30 分钟汇报产品自身和每个接入项目的健康、流量、机会点、代码升级、SCM、CI/CD、治理门禁、release evidence、场景矩阵、风险登记和 GO/NO-GO 结论。
+使用 production-lifecycle-governor，基于当前项目发现真实服务、接入项目、流量发生器、LLM、SCM 和 CI/CD 配置。请清理旧固定时长脚本、stale heartbeat、历史运行数据、过期报告和临时日志；保留项目注册、连接器、规则、环境和审计。然后做 readiness、非 mock 预检，预检通过后按我指定的时长启动长稳验证，并每 30 分钟汇报产品自身和每个接入项目的健康、流量、机会点、代码升级、SCM、CI/CD、治理门禁、release evidence、release coverage matrix、风险登记、每阶段的阶段决策链和 GO/NO-GO 结论。
 ```
 
 time-driven 本地调试示例：

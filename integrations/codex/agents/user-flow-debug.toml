@@ -123,6 +123,13 @@ loopState:
   acceptanceCriteria:
   reportCadence:
   finalDecision:
+  coverageMatrix:
+  iterationPlan:
+  evidenceMap:
+  blockerPolicy:
+  repairPolicy:
+  releaseDecision:
+  decisionChain:
   runTarget:
   dashboardEntry:
   runId:
@@ -136,6 +143,36 @@ loopState:
   nextAction:
   stopCondition:
 ```
+
+## Release Coverage Matrix Loop
+
+When a loop is tied to release readiness, production readiness, GA, RC, or a product-grade goal, convert the goal into a release coverage matrix before running or resuming the loop. The matrix prevents a loop from becoming service keepalive or repeated single-path reruns.
+
+The loop state must include:
+
+- `coverageMatrix`: rows for product capabilities, scenarios, connected projects or systems, required evidence, current status, blocker, and next repair action.
+- `iterationPlan`: which matrix rows this iteration will cover and why.
+- `evidenceMap`: links from each matrix row to logs, screenshots, API responses, SCM refs, CI/CD runs, product evidence, or other real artifacts.
+- `blockerPolicy`: whether to stop immediately, continue evidence collection, or enter repair mode for each blocker class.
+- `repairPolicy`: diagnosis, productized repair, verification, escalation, and blocked-stop rules.
+- `releaseDecision`: the current release decision from product-native APIs when available, otherwise the agent's explicit `GO`, `CONDITIONAL-GO`, `NO-GO`, or `BLOCKED` decision.
+- `decisionChain`: the 阶段决策链 printed for every phase, including evidence used, rule applied, options considered, selected decision, rationale, rejected alternatives when relevant, and next action.
+
+Required matrix status values are `PASS`, `FAIL`, `NOT_RUN`, `NOT_APPLICABLE`, and `BLOCKED`. A repeated blocker may not be handled by simply rerunning the same command. If the same blocker appears in consecutive iterations, switch to diagnosis and repair mode; if repair is outside current permissions or product boundaries, stop as `BLOCKED` or `NO-GO` and print the decision chain.
+
+Every phase report must print the decision chain, not only the final result:
+
+```text
+phase:
+evidence:
+rule:
+options:
+decision:
+rationale:
+nextAction:
+```
+
+Do not claim release progress from health checks alone. Health checks can be one row in the matrix, but release progress requires coverage of the product capabilities and scenarios named in the matrix.
 
 Each loop iteration must follow:
 
@@ -365,8 +402,11 @@ Loop contract summary:
 
 - `loopCadence` modes: continuous, after_each_fix, fixed_interval, user_checkpoint
 - `goalWindow` fields: finalGoal, phaseGoals, currentPhase, acceptanceCriteria, reportCadence, finalDecision
-- `stopPolicies`: flow_passes, maximum_attempts, deadline, ambiguous_ui_contract, required_user_choice, fix_policy_boundary, explicit_user_stop
-- `loopState` fields: goal, finalGoal, phaseGoals, currentPhase, acceptanceCriteria, reportCadence, finalDecision, attempt, runTarget, runtimeFlowType, lastScreenshotDirectory, lastArtifacts, lastFailureBoundary, lastFix, blocker, nextAction, stopCondition
+- `coverageMatrix` fields: capability, scenario, connectedProject, requiredEvidence, status, blocker, nextRepairAction
+- `repairPolicy` actions: diagnose, repair, verify, escalate, stop_blocked
+- `decisionChain` fields: phase, evidence, rule, options, decision, rationale, nextAction
+- `stopPolicies`: flow_passes, maximum_attempts, deadline, ambiguous_ui_contract, required_user_choice, fix_policy_boundary, explicit_user_stop, coverage_matrix_complete, repeated_blocker_requires_repair
+- `loopState` fields: goal, finalGoal, phaseGoals, currentPhase, acceptanceCriteria, reportCadence, finalDecision, attempt, runTarget, runtimeFlowType, lastScreenshotDirectory, lastArtifacts, lastFailureBoundary, lastFix, blocker, nextAction, stopCondition, coverageMatrix, iterationPlan, evidenceMap, blockerPolicy, repairPolicy, releaseDecision, decisionChain
 
-When running under Codex `/goal`, establish the loop goal window before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `reportCadence`, and `finalDecision` must be explicit. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Do not claim completion until the final goal and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
+When running under Codex `/goal`, establish the loop goal window, release coverage matrix, and per-phase decision chain before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `reportCadence`, `finalDecision`, `coverageMatrix`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain` must be explicit or product-native. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Every phase report must print the decision chain that led to its conclusion: evidence used, rule applied, options considered, chosen decision, rejected alternatives when relevant, and next action. A loop that repeats the same blocker must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions, stop as `BLOCKED` or `NO-GO`. Do not claim completion until the final goal, coverage matrix, decision chain, and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
 """

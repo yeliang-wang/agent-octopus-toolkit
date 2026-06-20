@@ -53,6 +53,9 @@ def render_codex_goal_adapter(manifest: dict) -> str:
     state_fields = ", ".join(loop_contract.get("stateFields", []))
     cadence_modes = ", ".join(loop_contract.get("cadenceModes", []))
     goal_window_fields = ", ".join(loop_contract.get("goalWindow", {}).get("fields", []))
+    coverage_fields = ", ".join(loop_contract.get("coverageMatrix", {}).get("fields", []))
+    repair_actions = ", ".join(loop_contract.get("repairPolicy", {}).get("actions", []))
+    decision_chain_fields = ", ".join(loop_contract.get("decisionChain", {}).get("fields", []))
     return f"""
 
 ## Codex Goal Runtime Adapter
@@ -73,10 +76,13 @@ Loop contract summary:
 
 - `loopCadence` modes: {cadence_modes}
 - `goalWindow` fields: {goal_window_fields}
+- `coverageMatrix` fields: {coverage_fields}
+- `repairPolicy` actions: {repair_actions}
+- `decisionChain` fields: {decision_chain_fields}
 - `stopPolicies`: {stop_policies}
 - `loopState` fields: {state_fields}
 
-When running under Codex `/goal`, establish the loop goal window before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `reportCadence`, and `finalDecision` must be explicit. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Do not claim completion until the final goal and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
+When running under Codex `/goal`, establish the loop goal window, release coverage matrix, and per-phase decision chain before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `reportCadence`, `finalDecision`, `coverageMatrix`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain` must be explicit or product-native. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Every phase report must print the decision chain that led to its conclusion: evidence used, rule applied, options considered, chosen decision, rejected alternatives when relevant, and next action. A loop that repeats the same blocker must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions, stop as `BLOCKED` or `NO-GO`. Do not claim completion until the final goal, coverage matrix, decision chain, and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
 """
 
 

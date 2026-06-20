@@ -18,7 +18,8 @@ Codex /goal
 
 Octopus agent loopContract
   -> inner domain loop protocol
-  -> loopCadence, goalWindow, stopPolicies, loopState, evidence
+  -> loopCadence, goalWindow, coverageMatrix, repairPolicy, decisionChain
+  -> stopPolicies, loopState, evidence
   -> confirmation gates and dangerous actions
 ```
 
@@ -37,7 +38,7 @@ Before starting a Codex-goal run:
 3. Render the adapter plan:
 
    ```bash
-   npm run agents:goal-plan -- --agent mcp-e2e-governor --project-id my-project "Prove the MCP onboarding journey"
+   npm run agents:goal-plan -- --agent production-lifecycle-governor --project-id my-project "Take this project through a release coverage matrix loop toward public-beta readiness"
    ```
 
 4. Start `/goal` in Codex with the rendered outer goal, then run the selected installed agent as the inner loop protocol.
@@ -47,6 +48,8 @@ Before starting a Codex-goal run:
 Every Codex-goal run must persist or report:
 
 - Loop goal window: `finalGoal`, `phaseGoals`, `currentPhase`, `acceptanceCriteria`, `reportCadence`, and `finalDecision`.
+- Release coverage matrix: `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, and `releaseDecision` when the goal is release-focused or production-grade.
+- Per-phase decision chain: `phase`, `evidence`, `rule`, `options`, `decision`, `rationale`, and `nextAction` printed in each phase report.
 - `loop-state.json`: current loop state, blocker, stop policy, and next action.
 - `current-status.md`: human-readable heartbeat for long-running loops.
 - `evidence/`: command output, MCP responses, screenshots, logs, artifacts, or assertion reports.
@@ -57,5 +60,7 @@ If the agent cannot establish the loop goal window or write these artifacts in t
 
 - Keep confirmation gates authoritative even when `/goal` is continuous.
 - Stop on pending user confirmation, missing evidence, unsafe production action, or a domain blocker.
+- Treat health checks, smoke checks, and process keepalive as connectivity evidence only; they are not release coverage by themselves.
+- When the same blocker repeats, switch from rerun into diagnosis, productized repair, and verification, or stop as `BLOCKED` / `NO-GO`.
 - Do not silently accept self-evolution candidates as new loop rules.
 - Do not promote project-specific runtime facts into generic toolkit instructions.

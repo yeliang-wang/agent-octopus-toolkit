@@ -58,7 +58,10 @@
     "iteration report",
     "sync result",
     "commit and push summary",
-    "CI or merge request status"
+    "CI or merge request status",
+    "coverage matrix result",
+    "repair verification result",
+    "per-phase decision chain"
   ],
   "evidence": [
     "git status",
@@ -66,7 +69,10 @@
     "per-iteration evidence",
     "sandbox git-inspect",
     "sandbox git-commit-check",
-    "sandbox git-conflicts"
+    "sandbox git-conflicts",
+    "coverage matrix status",
+    "repair verification evidence",
+    "per-phase decision chain"
   ],
   "confirmationGates": [
     "protected branch push",
@@ -95,7 +101,14 @@
       "phaseGoals",
       "acceptanceCriteria",
       "reportCadence",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stateFields": [
       "goal",
@@ -113,7 +126,14 @@
       "lastEvidence",
       "blocker",
       "nextAction",
-      "stopCondition"
+      "stopCondition",
+      "coverageMatrix",
+      "iterationPlan",
+      "evidenceMap",
+      "blockerPolicy",
+      "repairPolicy",
+      "releaseDecision",
+      "decisionChain"
     ],
     "stopPolicies": [
       "goal_reached",
@@ -121,7 +141,9 @@
       "ci_terminal_failure",
       "maximum_attempts",
       "deadline",
-      "explicit_user_stop"
+      "explicit_user_stop",
+      "coverage_matrix_complete",
+      "repeated_blocker_requires_repair"
     ],
     "cadenceModes": [
       "continuous",
@@ -133,7 +155,10 @@
       "git log",
       "remote ref state",
       "CI or change request status",
-      "command output"
+      "command output",
+      "coverage matrix status",
+      "repair verification evidence",
+      "per-phase decision chain"
     ],
     "goalWindow": {
       "required": true,
@@ -149,6 +174,53 @@
       "finalGoalRequired": true,
       "acceptanceCriteriaRequired": true,
       "finalDecisionRequired": true
+    },
+    "coverageMatrix": {
+      "required": true,
+      "fields": [
+        "capability",
+        "scenario",
+        "connectedProject",
+        "requiredEvidence",
+        "status",
+        "blocker",
+        "nextRepairAction"
+      ],
+      "statusValues": [
+        "PASS",
+        "FAIL",
+        "NOT_RUN",
+        "NOT_APPLICABLE",
+        "BLOCKED"
+      ],
+      "minimumRows": 1,
+      "repairRequiredOnRepeatBlocker": true
+    },
+    "repairPolicy": {
+      "required": true,
+      "repeatedBlockerThreshold": 2,
+      "actions": [
+        "diagnose",
+        "repair",
+        "verify",
+        "escalate",
+        "stop_blocked"
+      ],
+      "stopOnUnrepairable": true
+    },
+    "decisionChain": {
+      "required": true,
+      "fields": [
+        "phase",
+        "evidence",
+        "rule",
+        "options",
+        "decision",
+        "rationale",
+        "nextAction"
+      ],
+      "perPhaseRequired": true,
+      "printRequired": true
     }
   },
   "runtimeAdapters": {
@@ -176,7 +248,8 @@
       "Required Confirmations",
       "Standard Inspection",
       "Final Report",
-      "Loop Goal Window"
+      "Loop Goal Window",
+      "Release Coverage Matrix Loop"
     ],
     "requiredPhrases": [
       "octopus-sandbox",
@@ -190,7 +263,15 @@
       "finalGoal",
       "phaseGoals",
       "acceptanceCriteria",
-      "finalDecision"
+      "finalDecision",
+      "coverageMatrix",
+      "evidenceMap",
+      "repairPolicy",
+      "releaseDecision",
+      "repeated blocker",
+      "decisionChain",
+      "per-phase decision chain",
+      "阶段决策链"
     ]
   }
 }

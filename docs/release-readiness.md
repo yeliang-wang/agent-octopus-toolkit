@@ -40,6 +40,7 @@ The gate runs or verifies:
 | Lifecycle | no `experimental` packaged agents or plugins |
 | Loop plans | `loopContract`, required loop state fields, Codex goal adapter, artifact plan |
 | Loop goal window | every packaged agent requires explicit final goal, phase goals, acceptance criteria, report cadence, and final decision |
+| Release coverage matrix loop | every packaged agent requires coverage matrix, evidence map, blocker policy, repair policy, release decision, and per-phase decision chain |
 | Production release rule | every packaged agent forbids mock/fake/stub/simulator/fixture-only/demo-only/smoke-only/chat-only release evidence |
 | Docs | README release section and docs for release and competitive baseline |
 | Commands | manifest validation, distribution check, catalog check, deterministic eval, whitespace check, Codex install drift |
@@ -58,6 +59,34 @@ Required fields:
 - `finalDecision`: the explicit terminal decision such as `DONE`, `BLOCKED`, `NO-GO`, or `NOT_RELEASE_READY`.
 
 The release gate requires these fields in `loopContract.goalWindow`, `loopContract.stateFields`, and loop inputs where user input is needed. Agents must stop or report `BLOCKED` instead of running indefinitely when the final goal, acceptance criteria, or final decision cannot be established.
+
+## Release Coverage Matrix Loop
+
+For release, release-readiness, GA, public-beta, production-grade, or long-running product lifecycle goals, every packaged subagent must convert the goal window into a `Release Coverage Matrix Loop` before running.
+
+Required loop fields:
+
+- `coverageMatrix`: rows for product capabilities, scenarios, connected projects or systems, required evidence, status, blocker, and next repair action.
+- `iterationPlan`: the next phase sequence needed to move matrix rows from `NOT_RUN`, `FAIL`, or `BLOCKED` toward `PASS`.
+- `evidenceMap`: the product-native command, API, UI, CI/CD, SCM, runtime, artifact, or decision source backing each matrix row.
+- `blockerPolicy`: rules for when missing product boundaries, repeated failures, or non-production substitutes become `BLOCKED`, `NO-GO`, or not release-ready.
+- `repairPolicy`: diagnosis, productized repair, verification, escalation, and stop rules for repeated blockers.
+- `releaseDecision`: the current explicit decision, such as `GO`, `CONDITIONAL-GO`, `NO-GO`, `BLOCKED`, or `NOT_RELEASE_READY`.
+- `decisionChain`: the 阶段决策链 printed for every phase.
+
+Every phase report must print the decision chain that led to its conclusion:
+
+```text
+phase:
+evidence:
+rule:
+options:
+decision:
+rationale:
+nextAction:
+```
+
+Health checks, process keepalive, smoke checks, or repeating the same failed path do not count as release progress by themselves. If the same blocker repeats, the agent must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions or product boundary, the loop must stop as `BLOCKED` or `NO-GO`.
 
 ## Toolkit-Wide Production Release Rule
 
@@ -92,6 +121,8 @@ Each Codex loop plan must define:
 - Outer goal runtime: Codex `/goal`.
 - Inner loop protocol: selected Octopus agent.
 - Loop goal window: `finalGoal`, `phaseGoals`, `currentPhase`, `acceptanceCriteria`, `reportCadence`, and `finalDecision`.
+- Release coverage matrix fields: `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain`.
+- Per-phase decision chain: `phase`, `evidence`, `rule`, `options`, `decision`, `rationale`, and `nextAction`.
 - `loopState` fields including `goal`, `blocker`, `nextAction`, and `stopCondition`.
 - State artifact: `data/<agent-domain>/<projectId>/loop-state.json`.
 - Status artifact: `data/<agent-domain>/<projectId>/current-status.md`.
