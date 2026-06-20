@@ -28,6 +28,9 @@ fs.mkdirSync(tmpRoot, { recursive: true });
 fs.mkdirSync(lifecycleRoot, { recursive: true });
 fs.mkdirSync(artifactRoot, { recursive: true });
 for (const envFile of profile.envFiles ?? []) loadEnvFile(path.resolve(projectRoot, envFile));
+if (profile.auth?.tokenEnv && !process.env[profile.auth.tokenEnv] && profile.auth.defaultToken) {
+  process.env[profile.auth.tokenEnv] = profile.auth.defaultToken;
+}
 
 if (profile.targetPlanConfirmation?.status !== "confirmed") {
   const state = baseState({
