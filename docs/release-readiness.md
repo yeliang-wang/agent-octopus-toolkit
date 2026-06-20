@@ -105,6 +105,13 @@ npm run release:runner -- --profile <octopus.project.json>
 
 If `targetPlanConfirmation.status` is not `confirmed`, the runner writes `BLOCKED: pending loop target plan confirmation` and exits without executing release actions.
 
+When the loop exits, the runner must write both:
+
+- `data/production-lifecycle/<lifecycleId>/final-report.md`
+- `data/production-lifecycle/<lifecycleId>/final-report.json`
+
+The final report must include the confirmed target plan, the final GA/release target summary, every iteration's loop plan/target summary, the latest coverage matrix, the final product-native release decision, blockers, and artifact paths. This is required so a final user can audit the whole loop against each phase target and the final GA Release Target, instead of only seeing the last status snapshot.
+
 Health checks, process keepalive, smoke checks, or repeating the same failed path do not count as release progress by themselves. If the same blocker repeats, the agent must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions or product boundary, the loop must stop as `BLOCKED` or `NO-GO`.
 
 ## Production Representative Sandbox
@@ -166,6 +173,7 @@ Each Codex loop plan must define:
 - State artifact: `data/<agent-domain>/<projectId>/loop-state.json`.
 - Status artifact: `data/<agent-domain>/<projectId>/current-status.md`.
 - Evidence root: `data/<agent-domain>/<projectId>/evidence/`.
+- Final report artifacts: `final-report.md` and `final-report.json` with every iteration's loop plan/target summary and the final GA/release target summary.
 - Summary state only: `loop-state.json` stores compact counters, status, blocker, next action, decision IDs, artifact paths, bounded evidence snippets, and never full product API responses.
 - Iteration artifacts: large release decisions, risk registers, logs, traces, screenshots, stdout/stderr, and evidence bundles are externalized to per-iteration artifacts and referenced from state.
 - JSONL summary events: loop logs record event type, attempt, timestamp, compact release decision, compact counters, blocker, and next action, not full result payloads.

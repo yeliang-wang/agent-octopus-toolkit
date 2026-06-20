@@ -140,7 +140,7 @@ Protocol is generic, and execution is generic through a project profile. A targe
 npm run release:runner -- --profile project-profiles/examples/evopilot.ga.json
 ```
 
-The runner enforces `targetPlanConfirmation` before executing, writes compact `loop-state.json`, externalizes full iteration evidence under `artifacts/`, records summary events in `loop.jsonl`, and prints per-phase decision chains. Project-specific behavior belongs in the profile or an adapter step; toolkit core owns loop execution, evidence discipline, state compaction, and release decision governance.
+The runner enforces `targetPlanConfirmation` before executing, writes compact `loop-state.json`, externalizes full iteration evidence under `artifacts/`, records summary events in `loop.jsonl`, and prints per-phase decision chains. When the loop exits, it writes `final-report.md` and `final-report.json` with a final target summary, every iteration's loop plan/target summary, the confirmed target plan, the latest coverage matrix, the final GA/release decision, blockers, and artifact paths. Project-specific behavior belongs in the profile or an adapter step; toolkit core owns loop execution, evidence discipline, state compaction, final reporting, and release decision governance.
 
 ### Production Representative Sandbox
 

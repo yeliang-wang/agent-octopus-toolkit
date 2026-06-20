@@ -32,7 +32,13 @@
   },
   "runner": {
     "mode": "continuous",
-    "intervalMs": 1800000
+    "intervalMs": 1800000,
+    "finalReports": {
+      "markdown": "data/production-lifecycle/evopilot-ga-release-matrix/final-report.md",
+      "json": "data/production-lifecycle/evopilot-ga-release-matrix/final-report.json",
+      "includeIterationTargetSummaries": true,
+      "includeFinalTargetSummary": true
+    }
   },
   "envFiles": [
     "data/evopilot/llm.env",

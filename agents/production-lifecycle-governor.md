@@ -465,6 +465,9 @@ Return `NO-GO` when:
 The final report must include:
 
 - explicit release decision: `GO`, `CONDITIONAL-GO`, or `NO-GO`
+- final target summary that states whether the GA/release target was reached, the final product-native decision, total iterations, latest coverage, blocker, and conclusion
+- loop plan/target summary for every iteration, including iteration number, timestamp, release decision, coverage pass/required count, target alignment, blocker, and iteration artifact path
+- target plan recap that maps the final outcome back to the confirmed final goal, phase goals, acceptance criteria, and final decision vocabulary
 - candidate source: branch, commit, tag, build, or artifact
 - actual duration and whether the runner lasted the requested duration
 - service uptime, restarts, health failures, and recovery

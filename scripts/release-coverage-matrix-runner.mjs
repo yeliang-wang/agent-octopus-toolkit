@@ -19,6 +19,8 @@ const lifecycleRoot = path.join(projectRoot, "data", "production-lifecycle", lif
 const artifactRoot = path.join(lifecycleRoot, "artifacts");
 const statePath = path.join(lifecycleRoot, "loop-state.json");
 const statusPath = path.join(lifecycleRoot, "current-status.md");
+const finalReportPath = path.resolve(projectRoot, profile.runner?.finalReports?.markdown ?? path.join(lifecycleRoot, "final-report.md"));
+const finalReportJsonPath = path.resolve(projectRoot, profile.runner?.finalReports?.json ?? path.join(lifecycleRoot, "final-report.json"));
 const logPath = path.join(tmpRoot, "loop.jsonl");
 const textLogPath = path.join(tmpRoot, "loop.log");
 const intervalMs = Number(args.intervalMs ?? profile.runner?.intervalMs ?? 30 * 60 * 1000);
@@ -63,10 +65,15 @@ while (true) {
   writeIterationArtifact(iteration, result);
   writeState(baseState(result), result.decisionChain);
   if (result.releaseDecision?.status === (profile.releaseDecision?.goStatus ?? "GO")) {
-    append({ event: "loop.finished", at: new Date().toISOString(), status: result.releaseDecision.status, iteration });
+    writeFinalReport(result, "release-target-reached");
+    append({ event: "loop.finished", at: new Date().toISOString(), status: result.releaseDecision.status, iteration, finalReport: finalReportPath });
     process.exit(0);
   }
-  if (once) process.exit(result.blocker ? 1 : 0);
+  if (once) {
+    writeFinalReport(result, result.blocker ? "single-run-blocked" : "single-run-complete");
+    append({ event: "loop.finished", at: new Date().toISOString(), status: result.releaseDecision?.status ?? "PENDING", iteration, finalReport: finalReportPath });
+    process.exit(result.blocker ? 1 : 0);
+  }
   await sleep(intervalMs);
 }
 
@@ -143,7 +150,7 @@ async function runIteration(attempt) {
 
   const blockerRow = coverageMatrix.find((item) => item.status !== "PASS" && item.required !== false);
   const blocker = blockerRow ? `${blockerRow.capability}/${blockerRow.scenario}: ${blockerRow.blocker}` : "";
-  return {
+  const result = {
     attempt,
     projectId: profile.projectId,
     releaseTarget: profile.releaseTarget,
@@ -158,6 +165,8 @@ async function runIteration(attempt) {
     nextAction: blocker ? "Continue repair loop at next cadence." : "Continue until product-native release decision reaches GO.",
     updatedAt: new Date().toISOString()
   };
+  result.targetPlanSummary = buildIterationTargetPlanSummary(result);
+  return result;
 }
 
 async function runHttpStep(step) {
@@ -249,6 +258,12 @@ function baseState(result) {
     blocker: result.blocker,
     nextAction: result.nextAction,
     latestArtifact: path.join(artifactRoot, `iteration-${String(result.attempt ?? 0).padStart(4, "0")}.json`),
+    iterationPlanTargetSummaries: collectIterationTargetPlanSummaries(result),
+    finalReport: {
+      markdown: finalReportPath,
+      json: finalReportJsonPath,
+      status: result.releaseDecision?.status === (profile.releaseDecision?.goStatus ?? "GO") ? "available" : "pending"
+    },
     stopCondition: result.releaseDecision?.status === (profile.releaseDecision?.goStatus ?? "GO") ? "release_target_reached" : "continue_until_go_or_unrepairable_blocker",
     updatedAt: result.updatedAt ?? new Date().toISOString()
   };
@@ -257,6 +272,167 @@ function baseState(result) {
 function writeIterationArtifact(iterationNumber, result) {
   const artifactPath = path.join(artifactRoot, `iteration-${String(iterationNumber).padStart(4, "0")}.json`);
   fs.writeFileSync(artifactPath, JSON.stringify(result, null, 2) + "\n", "utf8");
+}
+
+function writeFinalReport(result, terminalReason) {
+  const iterationSummaries = collectIterationTargetPlanSummaries(result);
+  const report = {
+    schema: "agent-octopus-final-release-report/v1",
+    projectId: profile.projectId,
+    releaseTarget: profile.releaseTarget,
+    lifecycleId,
+    terminalReason,
+    generatedAt: new Date().toISOString(),
+    targetPlan: profile.targetPlan,
+    targetPlanConfirmation: profile.targetPlanConfirmation,
+    releaseDecision: result.releaseDecision,
+    finalTargetSummary: buildFinalTargetSummary(result, iterationSummaries),
+    iterationPlanTargetSummaries: iterationSummaries,
+    coverageMatrix: result.coverageMatrix ?? [],
+    decisionChain: result.decisionChain ?? [],
+    summary: result.summary,
+    blocker: result.blocker,
+    nextAction: result.nextAction,
+    artifacts: {
+      lifecycleRoot,
+      status: statusPath,
+      state: statePath,
+      iterationArtifacts: artifactRoot,
+      finalReport: finalReportPath,
+      finalReportJson: finalReportJsonPath,
+      loopLog: logPath,
+      commandLog: textLogPath
+    },
+    productionReleaseRule: "No mock, fake, stub, simulator, fixture-only, demo-only, smoke-only, or chat-only evidence is counted as production release proof."
+  };
+  fs.mkdirSync(path.dirname(finalReportPath), { recursive: true });
+  fs.mkdirSync(path.dirname(finalReportJsonPath), { recursive: true });
+  fs.writeFileSync(finalReportJsonPath, JSON.stringify(report, null, 2) + "\n", "utf8");
+  fs.writeFileSync(finalReportPath, renderFinalReport(report), "utf8");
+}
+
+function buildIterationTargetPlanSummary(result) {
+  const matrix = result.coverageMatrix ?? [];
+  const requiredRows = matrix.filter((item) => item.required !== false);
+  const passedRows = requiredRows.filter((item) => item.status === "PASS");
+  const failedRows = requiredRows.filter((item) => item.status !== "PASS");
+  return {
+    iteration: result.attempt,
+    updatedAt: result.updatedAt,
+    finalGoal: profile.targetPlan.finalGoal,
+    releaseTarget: profile.releaseTarget,
+    phaseGoals: profile.targetPlan.phaseGoals,
+    acceptanceCriteria: profile.targetPlan.acceptanceCriteria,
+    coverage: {
+      required: requiredRows.length,
+      passed: passedRows.length,
+      failedOrBlocked: failedRows.length
+    },
+    releaseDecision: result.releaseDecision?.status ?? "PENDING",
+    blocker: result.blocker || "",
+    targetAlignment: result.releaseDecision?.status === (profile.releaseDecision?.goStatus ?? "GO") ? "GA_RELEASE_TARGET_REACHED" : "GA_RELEASE_TARGET_NOT_REACHED",
+    artifact: path.join(artifactRoot, `iteration-${String(result.attempt ?? 0).padStart(4, "0")}.json`)
+  };
+}
+
+function buildFinalTargetSummary(result, iterationSummaries) {
+  const latest = iterationSummaries.at(-1) ?? buildIterationTargetPlanSummary(result);
+  const goStatus = profile.releaseDecision?.goStatus ?? "GO";
+  return {
+    finalGoal: profile.targetPlan.finalGoal,
+    finalDecision: result.releaseDecision?.status ?? "PENDING",
+    targetReached: result.releaseDecision?.status === goStatus,
+    totalIterations: iterationSummaries.length,
+    latestIteration: latest.iteration,
+    latestCoverage: latest.coverage,
+    blocker: result.blocker || "",
+    unmetAcceptanceCriteria: latest.targetAlignment === "GA_RELEASE_TARGET_REACHED" ? [] : profile.targetPlan.acceptanceCriteria,
+    conclusion: result.releaseDecision?.status === goStatus ? `${profile.releaseTarget} Release Target reached.` : `${profile.releaseTarget} Release Target not reached.`
+  };
+}
+
+function collectIterationTargetPlanSummaries(currentResult) {
+  const summaries = [];
+  if (fs.existsSync(artifactRoot)) {
+    for (const fileName of fs.readdirSync(artifactRoot).filter((name) => /^iteration-\d+\.json$/.test(name)).sort()) {
+      try {
+        const artifact = readJson(path.join(artifactRoot, fileName));
+        summaries.push(artifact.targetPlanSummary ?? buildIterationTargetPlanSummary(artifact));
+      } catch {
+        // Ignore corrupt in-progress artifacts; the latest state still records the active blocker.
+      }
+    }
+  }
+  if (currentResult && !summaries.some((item) => Number(item.iteration) === Number(currentResult.attempt))) {
+    summaries.push(currentResult.targetPlanSummary ?? buildIterationTargetPlanSummary(currentResult));
+  }
+  return summaries.slice(-200);
+}
+
+function renderFinalReport(report) {
+  return `# ${report.projectId} ${report.releaseTarget} Release Target Final Report
+
+Generated: ${report.generatedAt}
+
+## Final Target Summary
+
+- Final goal: ${report.finalTargetSummary.finalGoal}
+- Final decision: ${report.finalTargetSummary.finalDecision}
+- Target reached: ${report.finalTargetSummary.targetReached ? "yes" : "no"}
+- Total iterations summarized: ${report.finalTargetSummary.totalIterations}
+- Latest iteration: ${report.finalTargetSummary.latestIteration ?? "unknown"}
+- Required coverage: ${report.finalTargetSummary.latestCoverage?.passed ?? 0}/${report.finalTargetSummary.latestCoverage?.required ?? 0} passed
+- Blocker: ${report.finalTargetSummary.blocker || "none"}
+- Conclusion: ${report.finalTargetSummary.conclusion}
+
+## Target Plan
+
+- Confirmation: ${report.targetPlanConfirmation?.status ?? "missing"}
+- Confirmed at: ${report.targetPlanConfirmation?.confirmedAt ?? "unknown"}
+- Release target: ${report.releaseTarget}
+- Final decision vocabulary: ${(report.targetPlan.finalDecision ?? []).join(", ")}
+
+### Phase Targets
+
+${(report.targetPlan.phaseGoals ?? []).map((item, index) => `${index + 1}. ${item}`).join("\n")}
+
+### Acceptance Criteria
+
+${(report.targetPlan.acceptanceCriteria ?? []).map((item) => `- ${item}`).join("\n")}
+
+## Loop Plan/Target Iteration Summary
+
+| Iteration | Updated At | Release Decision | Coverage | Target Alignment | Blocker |
+| --- | --- | --- | --- | --- | --- |
+${report.iterationPlanTargetSummaries.map((item) => `| ${item.iteration} | ${item.updatedAt ?? ""} | ${item.releaseDecision ?? "PENDING"} | ${item.coverage?.passed ?? 0}/${item.coverage?.required ?? 0} | ${item.targetAlignment ?? "unknown"} | ${escapeTable(item.blocker || "none")} |`).join("\n")}
+
+## Latest Coverage Matrix
+
+${(report.coverageMatrix ?? []).map((item) => `- ${item.status} ${item.capability}/${item.scenario}: ${item.requiredEvidence}${item.blocker ? `; blocker=${item.blocker}` : ""}`).join("\n")}
+
+## Latest Phase Decision Chain
+
+${(report.decisionChain ?? []).map((item) => `### ${item.phase}
+
+- rule: ${item.rule}
+- decision: ${item.decision}
+- rationale: ${item.rationale}
+- nextAction: ${item.nextAction}
+`).join("\n")}
+
+## Artifacts
+
+- State: ${report.artifacts.state}
+- Current status: ${report.artifacts.status}
+- Iteration artifacts: ${report.artifacts.iterationArtifacts}
+- JSON report: ${report.artifacts.finalReportJson}
+- Loop log: ${report.artifacts.loopLog}
+- Command log: ${report.artifacts.commandLog}
+
+## Production Release Evidence Rule
+
+${report.productionReleaseRule}
+`;
 }
 
 function renderStatus(state, decisionChain) {
@@ -484,6 +660,10 @@ function sleep(ms) {
 
 function safeTimestamp(date) {
   return date.toISOString().replace(/[:.]/g, "-");
+}
+
+function escapeTable(value) {
+  return String(value ?? "").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
 }
 
 function parseArgs(argv) {

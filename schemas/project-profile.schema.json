@@ -48,7 +48,17 @@
       "required": ["mode", "intervalMs"],
       "properties": {
         "mode": { "enum": ["continuous", "once"] },
-        "intervalMs": { "type": "integer", "minimum": 1000 }
+        "intervalMs": { "type": "integer", "minimum": 1000 },
+        "finalReports": {
+          "type": "object",
+          "required": ["markdown", "json", "includeIterationTargetSummaries", "includeFinalTargetSummary"],
+          "properties": {
+            "markdown": { "type": "string", "minLength": 1 },
+            "json": { "type": "string", "minLength": 1 },
+            "includeIterationTargetSummaries": { "const": true },
+            "includeFinalTargetSummary": { "const": true }
+          }
+        }
       }
     },
     "envFiles": {

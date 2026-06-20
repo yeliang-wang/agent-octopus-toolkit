@@ -245,6 +245,11 @@ def validate_project_profiles() -> None:
       require(isinstance(target_plan["acceptanceCriteria"], list) and target_plan["acceptanceCriteria"], f"{rel(path)}: targetPlan.acceptanceCriteria must be non-empty")
       require(profile["targetPlanConfirmation"].get("status") == "confirmed", f"{rel(path)}: example profile must include confirmed targetPlanConfirmation")
       require(profile["runner"].get("mode") in {"continuous", "once"}, f"{rel(path)}: runner.mode must be continuous or once")
+      final_reports = profile["runner"].get("finalReports", {})
+      require(final_reports.get("markdown", "").endswith("final-report.md"), f"{rel(path)}: runner.finalReports.markdown must end with final-report.md")
+      require(final_reports.get("json", "").endswith("final-report.json"), f"{rel(path)}: runner.finalReports.json must end with final-report.json")
+      require(final_reports.get("includeIterationTargetSummaries") is True, f"{rel(path)}: runner.finalReports.includeIterationTargetSummaries must be true")
+      require(final_reports.get("includeFinalTargetSummary") is True, f"{rel(path)}: runner.finalReports.includeFinalTargetSummary must be true")
       steps = profile["steps"]
       require(isinstance(steps, list) and steps, f"{rel(path)}: steps must be non-empty")
       seen_step_ids = set()
