@@ -146,6 +146,17 @@
       "required": true
     },
     {
+      "id": "representative-project-loop",
+      "type": "command",
+      "capability": "representative-projects",
+      "scenario": "project-level-evolution-loop",
+      "command": "node",
+      "args": ["scripts/release-matrix-project-loop.mjs"],
+      "timeoutMs": 7200000,
+      "requiredEvidence": "Each registered production representative project completes run, review confirmation, code upgrade, and Jenkins CI/CD through EvoPilot product APIs",
+      "required": true
+    },
+    {
       "id": "release-evidence",
       "type": "release-evidence",
       "capability": "release-evidence",
