@@ -139,6 +139,8 @@
       "stopCondition",
       "runMode",
       "acceptanceCriteria",
+      "targetPlan",
+      "targetPlanConfirmation",
       "finalGoal",
       "phaseGoals",
       "reportCadence",
@@ -157,6 +159,8 @@
       "phaseGoals",
       "currentPhase",
       "acceptanceCriteria",
+      "targetPlan",
+      "targetPlanConfirmation",
       "reportCadence",
       "finalDecision",
       "attempt",
@@ -187,6 +191,7 @@
       "maximum_duration",
       "maximum_attempts",
       "failed_readiness",
+      "pending_target_plan_confirmation",
       "failed_precheck",
       "release_decision",
       "explicit_user_stop",
@@ -219,13 +224,18 @@
         "phaseGoals",
         "currentPhase",
         "acceptanceCriteria",
+        "targetPlan",
+        "targetPlanConfirmation",
         "reportCadence",
         "finalDecision"
       ],
       "phaseGoalRequired": true,
       "finalGoalRequired": true,
       "acceptanceCriteriaRequired": true,
-      "finalDecisionRequired": true
+      "finalDecisionRequired": true,
+      "confirmBeforeLoop": true,
+      "targetPlanRequired": true,
+      "targetPlanConfirmationRequired": true
     },
     "coverageMatrix": {
       "required": true,
@@ -339,7 +349,10 @@
       "real target-product registration",
       "summary state only",
       "externalized to iteration artifacts",
-      "state size guard"
+      "state size guard",
+      "target plan confirmation",
+      "explicit user confirmation before entering the loop",
+      "BLOCKED: pending loop target plan confirmation"
     ]
   }
 }

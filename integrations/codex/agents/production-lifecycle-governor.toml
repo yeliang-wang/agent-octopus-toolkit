@@ -296,10 +296,14 @@ Before starting or resuming a loop, establish the loop goal window in chat or in
 - `finalGoal`: the final release, readiness, operational, or lifecycle outcome that must be proven before the loop can stop successfully.
 - `phaseGoals`: ordered interim outcomes, checkpoints, or milestones. Every iteration must map to one current phase.
 - `acceptanceCriteria`: evidence required for each phase and for the final goal.
+- `targetPlan`: the proposed loop plan, including final target, phase targets, per-phase acceptance criteria, coverage rows, evidence sources, blocker policy, repair policy, report cadence, and final decision vocabulary.
+- `targetPlanConfirmation`: the user's explicit confirmation or requested edits before loop execution.
 - `reportCadence`: when to update chat, `current-status.md`, or another status artifact.
 - `finalDecision`: the terminal decision vocabulary for this agent, such as `GO`, `CONDITIONAL-GO`, `NO-GO`, `BLOCKED`, or not release-ready.
 
 If the product exposes native release targets or release decisions, use them as the source of truth for `finalGoal`, `acceptanceCriteria`, and `finalDecision`. If the final goal or acceptance criteria are missing, ask for them or infer them from product-native contracts and clearly mark them as inferred. Do not claim loop completion until the final goal and all required acceptance criteria are proven by evidence.
+
+Before any loop action starts or resumes, present the provided or inferred `targetPlan` to the user as a confirmation proposal. The proposal must identify which targets came from user instruction, which came from product-native discovery, and which were inferred from context. Require explicit user confirmation before entering the loop. If the plan is not confirmed, stop as `BLOCKED: pending loop target plan confirmation`; do not run loop actions until the user confirms or edits the plan.
 
 Minimum loop inputs:
 
@@ -318,6 +322,8 @@ loopState:
   phaseGoals:
   currentPhase:
   acceptanceCriteria:
+  targetPlan:
+  targetPlanConfirmation:
   reportCadence:
   finalDecision:
   coverageMatrix:
@@ -512,12 +518,12 @@ Codex goal mapping:
 Loop contract summary:
 
 - `loopCadence` modes: continuous, fixed_duration, fixed_interval, user_checkpoint
-- `goalWindow` fields: finalGoal, phaseGoals, currentPhase, acceptanceCriteria, reportCadence, finalDecision
+- `goalWindow` fields: finalGoal, phaseGoals, currentPhase, acceptanceCriteria, targetPlan, targetPlanConfirmation, reportCadence, finalDecision
 - `coverageMatrix` fields: capability, scenario, connectedProject, requiredEvidence, status, blocker, nextRepairAction
 - `repairPolicy` actions: diagnose, repair, verify, escalate, stop_blocked
 - `decisionChain` fields: phase, evidence, rule, options, decision, rationale, nextAction
-- `stopPolicies`: product_native_go, conditional_go, no_go_blocker, maximum_duration, maximum_attempts, failed_readiness, failed_precheck, release_decision, explicit_user_stop, coverage_matrix_complete, repeated_blocker_requires_repair
-- `loopState` fields: goal, finalGoal, phaseGoals, currentPhase, acceptanceCriteria, reportCadence, finalDecision, attempt, runtimeTarget, readiness, precheck, lastEvidence, productGap, releaseEvidence, decision, blocker, nextAction, stopCondition, coverageMatrix, iterationPlan, evidenceMap, blockerPolicy, repairPolicy, releaseDecision, decisionChain, artifactIndex, stateSizeGuard
+- `stopPolicies`: product_native_go, conditional_go, no_go_blocker, maximum_duration, maximum_attempts, failed_readiness, pending_target_plan_confirmation, failed_precheck, release_decision, explicit_user_stop, coverage_matrix_complete, repeated_blocker_requires_repair
+- `loopState` fields: goal, finalGoal, phaseGoals, currentPhase, acceptanceCriteria, targetPlan, targetPlanConfirmation, reportCadence, finalDecision, attempt, runtimeTarget, readiness, precheck, lastEvidence, productGap, releaseEvidence, decision, blocker, nextAction, stopCondition, coverageMatrix, iterationPlan, evidenceMap, blockerPolicy, repairPolicy, releaseDecision, decisionChain, artifactIndex, stateSizeGuard
 
-When running under Codex `/goal`, establish the loop goal window, release coverage matrix, and per-phase decision chain before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `reportCadence`, `finalDecision`, `coverageMatrix`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain` must be explicit or product-native. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Every phase report must print the decision chain that led to its conclusion: evidence used, rule applied, options considered, chosen decision, rejected alternatives when relevant, and next action. Persist summary state only in `loop-state.json`; large API responses, release decisions, risk registers, logs, screenshots, traces, and full evidence payloads must be externalized to iteration artifacts and referenced by path. JSONL loop logs must record event summaries, not full result payloads. Resume from the persisted attempt and product-native evidence store after restart, and enforce a state size guard before writing state so payload growth cannot terminate the loop. A loop that repeats the same blocker must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions, stop as `BLOCKED` or `NO-GO`. Do not claim completion until the final goal, coverage matrix, decision chain, and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
+When running under Codex `/goal`, establish the loop goal window, release coverage matrix, and per-phase decision chain before starting or resuming: `finalGoal`, `phaseGoals`, `acceptanceCriteria`, `targetPlan`, `targetPlanConfirmation`, `reportCadence`, `finalDecision`, `coverageMatrix`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain` must be explicit or product-native. Before any loop action starts, present the provided or inferred target plan to the user as a confirmation proposal, including the final target, phase targets, per-phase acceptance criteria, release coverage matrix, evidence sources, blocker policy, repair policy, report cadence, and final decision vocabulary. Mark which parts came from the user, which came from product-native discovery, and which were inferred from context. Require explicit user confirmation before entering the loop. If the target plan is unconfirmed, stop as `BLOCKED: pending loop target plan confirmation`; do not start, resume, or continue the loop until the user confirms or edits the plan. Persist or report `loopState` after every iteration, keep confirmation gates authoritative, and stop instead of bypassing pending user approval, missing evidence, or a declared stop policy. Every phase report must print the decision chain that led to its conclusion: evidence used, rule applied, options considered, chosen decision, rejected alternatives when relevant, and next action. Persist summary state only in `loop-state.json`; large API responses, release decisions, risk registers, logs, screenshots, traces, and full evidence payloads must be externalized to iteration artifacts and referenced by path. JSONL loop logs must record event summaries, not full result payloads. Resume from the persisted attempt and product-native evidence store after restart, and enforce a state size guard before writing state so payload growth cannot terminate the loop. A loop that repeats the same blocker must switch from rerun mode into diagnosis, productized repair, and verification; if that cannot be done under the current permissions, stop as `BLOCKED` or `NO-GO`. Do not claim completion until the final goal, coverage matrix, decision chain, and acceptance criteria are evidence-proven. Do not weaken this agent's domain boundary merely because the outer runtime is continuous.
 """

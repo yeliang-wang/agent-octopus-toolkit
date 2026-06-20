@@ -112,10 +112,12 @@ Every loop-capable subagent must establish a loop goal window before starting or
 - `finalGoal`: the end-state the loop is trying to reach.
 - `phaseGoals`: staged goals for the current release, validation, or evolution phase.
 - `acceptanceCriteria`: evidence-backed criteria required before completion can be claimed.
+- `targetPlan`: the proposed loop plan, including final target, phase targets, per-phase acceptance criteria, coverage rows, evidence sources, blocker policy, repair policy, report cadence, and final decision vocabulary.
+- `targetPlanConfirmation`: the user's explicit confirmation or requested edits before loop execution.
 - `reportCadence`: when the agent reports progress, blockers, and next actions.
 - `finalDecision`: the explicit terminal decision, such as `DONE`, `BLOCKED`, `NO-GO`, or `NOT_RELEASE_READY`.
 
-Agents may iterate through phase goals, but they must not claim loop completion until the final goal and acceptance criteria are proven with evidence.
+Agents may infer missing target details from context or product-native discovery, but the inferred plan is not executable by itself. Before starting or resuming any loop, the agent must present the provided or inferred target plan as a confirmation proposal and require explicit user confirmation before entering the loop. If the plan is not confirmed, the agent stops as `BLOCKED: pending loop target plan confirmation` and does not run loop actions. Agents may iterate through phase goals only after confirmation, and they must not claim loop completion until the final goal and acceptance criteria are proven with evidence.
 
 ### Release Coverage Matrix Loop
 

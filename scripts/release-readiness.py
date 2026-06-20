@@ -159,7 +159,7 @@ def production_release_rule_checks() -> list[dict[str, Any]]:
         add(checks, f"{agent_id}:goal-window-required-section", LOOP_GOAL_WINDOW_SECTION in validation.get("requiredSections", []))
         add(checks, f"{agent_id}:coverage-required-section", RELEASE_COVERAGE_MATRIX_SECTION in validation.get("requiredSections", []))
         add(checks, f"{agent_id}:required-phrase", "Smoke checks may prove connectivity only" in validation.get("requiredPhrases", []))
-        add(checks, f"{agent_id}:goal-window-required-phrases", all(phrase in validation.get("requiredPhrases", []) for phrase in ["finalGoal", "phaseGoals", "acceptanceCriteria", "finalDecision"]))
+        add(checks, f"{agent_id}:goal-window-required-phrases", all(phrase in validation.get("requiredPhrases", []) for phrase in ["finalGoal", "phaseGoals", "acceptanceCriteria", "target plan confirmation", "explicit user confirmation before entering the loop", "BLOCKED: pending loop target plan confirmation", "finalDecision"]))
     return checks
 
 

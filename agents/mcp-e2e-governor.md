@@ -230,10 +230,14 @@ Before starting or resuming a loop, establish the loop goal window in chat or in
 - `finalGoal`: the final user-visible outcome that must be proven before the loop can stop successfully.
 - `phaseGoals`: ordered interim outcomes, checkpoints, or milestones. Every iteration must map to one current phase.
 - `acceptanceCriteria`: evidence required for each phase and for the final goal.
+- `targetPlan`: the proposed loop plan, including final target, phase targets, per-phase acceptance criteria, coverage rows, evidence sources, blocker policy, repair policy, report cadence, and final decision vocabulary.
+- `targetPlanConfirmation`: the user's explicit confirmation or requested edits before loop execution.
 - `reportCadence`: when to update chat, `current-status.md`, or another status artifact.
 - `finalDecision`: the terminal decision vocabulary for this agent, such as pass/fail, blocked, accepted proposal, or not-ready.
 
 If the final goal or acceptance criteria are missing, ask for them or infer them from product-native contracts and clearly mark them as inferred. Do not claim loop completion until the final goal and all required acceptance criteria are proven by evidence.
+
+Before any loop action starts or resumes, present the provided or inferred `targetPlan` to the user as a confirmation proposal. The proposal must identify which targets came from user instruction, which came from product-native discovery, and which were inferred from context. Require explicit user confirmation before entering the loop. If the plan is not confirmed, stop as `BLOCKED: pending loop target plan confirmation`; do not run loop actions until the user confirms or edits the plan.
 
 Minimum loop inputs:
 
@@ -252,6 +256,8 @@ loopState:
   phaseGoals:
   currentPhase:
   acceptanceCriteria:
+  targetPlan:
+  targetPlanConfirmation:
   reportCadence:
   finalDecision:
   coverageMatrix:

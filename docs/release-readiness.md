@@ -56,10 +56,12 @@ Required fields:
 - `phaseGoals`: staged objectives for the current release, validation, or evolution phase.
 - `currentPhase`: the active phase being worked now.
 - `acceptanceCriteria`: evidence-backed criteria needed before completion can be claimed.
+- `targetPlan`: the proposed loop plan, including final target, phase targets, per-phase acceptance criteria, coverage rows, evidence sources, blocker policy, repair policy, report cadence, and final decision vocabulary.
+- `targetPlanConfirmation`: the user's explicit confirmation or requested edits before loop execution.
 - `reportCadence`: when the agent reports progress, blockers, and next actions.
 - `finalDecision`: the explicit terminal decision such as `DONE`, `BLOCKED`, `NO-GO`, or `NOT_RELEASE_READY`.
 
-The release gate requires these fields in `loopContract.goalWindow`, `loopContract.stateFields`, and loop inputs where user input is needed. Agents must stop or report `BLOCKED` instead of running indefinitely when the final goal, acceptance criteria, or final decision cannot be established.
+The release gate requires these fields in `loopContract.goalWindow`, `loopContract.stateFields`, and loop inputs where user input is needed. Agents may infer missing target details from context or product-native discovery, but the inferred plan must be presented to the user as a confirmation proposal before the loop starts or resumes. Require explicit user confirmation before entering the loop. If the target plan is unconfirmed, agents must stop as `BLOCKED: pending loop target plan confirmation`; they must not run loop actions from an unconfirmed plan. Agents must also stop or report `BLOCKED` instead of running indefinitely when the final goal, acceptance criteria, or final decision cannot be established.
 
 ## Release Coverage Matrix Loop
 

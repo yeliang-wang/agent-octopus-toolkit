@@ -62,6 +62,8 @@ LOOP_GOAL_WINDOW_FIELDS = [
     "phaseGoals",
     "currentPhase",
     "acceptanceCriteria",
+    "targetPlan",
+    "targetPlanConfirmation",
     "reportCadence",
     "finalDecision",
 ]
@@ -317,7 +319,7 @@ def validate_loop_contract(path: Path, manifest: dict) -> None:
         require(required_input in loop_inputs, f"{rel(path)}: loopContract.inputs missing {required_input}")
     for required_field in LOOP_GOAL_WINDOW_FIELDS:
         require(required_field in state_fields, f"{rel(path)}: loopContract.stateFields missing goal window field {required_field}")
-    for required_input in ["finalGoal", "phaseGoals", "acceptanceCriteria", "reportCadence", "finalDecision"]:
+    for required_input in ["finalGoal", "phaseGoals", "acceptanceCriteria", "targetPlan", "targetPlanConfirmation", "reportCadence", "finalDecision"]:
         require(required_input in loop_inputs, f"{rel(path)}: loopContract.inputs missing goal window input {required_input}")
     for required_field in RELEASE_COVERAGE_FIELDS:
         require(required_field in state_fields, f"{rel(path)}: loopContract.stateFields missing release coverage field {required_field}")
@@ -325,12 +327,15 @@ def validate_loop_contract(path: Path, manifest: dict) -> None:
         require(required_input in loop_inputs, f"{rel(path)}: loopContract.inputs missing release coverage input {required_input}")
     goal_window = loop_contract["goalWindow"]
     require(isinstance(goal_window, dict), f"{rel(path)}: loopContract.goalWindow must be an object")
-    for key in ["required", "fields", "phaseGoalRequired", "finalGoalRequired", "acceptanceCriteriaRequired", "finalDecisionRequired"]:
+    for key in ["required", "fields", "phaseGoalRequired", "finalGoalRequired", "acceptanceCriteriaRequired", "targetPlanRequired", "targetPlanConfirmationRequired", "confirmBeforeLoop", "finalDecisionRequired"]:
         require(key in goal_window, f"{rel(path)}: loopContract.goalWindow.{key} is required")
     require(goal_window["required"] is True, f"{rel(path)}: loopContract.goalWindow.required must be true")
     require(goal_window["phaseGoalRequired"] is True, f"{rel(path)}: loopContract.goalWindow.phaseGoalRequired must be true")
     require(goal_window["finalGoalRequired"] is True, f"{rel(path)}: loopContract.goalWindow.finalGoalRequired must be true")
     require(goal_window["acceptanceCriteriaRequired"] is True, f"{rel(path)}: loopContract.goalWindow.acceptanceCriteriaRequired must be true")
+    require(goal_window["targetPlanRequired"] is True, f"{rel(path)}: loopContract.goalWindow.targetPlanRequired must be true")
+    require(goal_window["targetPlanConfirmationRequired"] is True, f"{rel(path)}: loopContract.goalWindow.targetPlanConfirmationRequired must be true")
+    require(goal_window["confirmBeforeLoop"] is True, f"{rel(path)}: loopContract.goalWindow.confirmBeforeLoop must be true")
     require(goal_window["finalDecisionRequired"] is True, f"{rel(path)}: loopContract.goalWindow.finalDecisionRequired must be true")
     goal_window_fields = validate_string_list(path, goal_window["fields"], "loopContract.goalWindow.fields", min_items=6)
     for required_field in LOOP_GOAL_WINDOW_FIELDS:
@@ -370,6 +375,7 @@ def validate_loop_contract(path: Path, manifest: dict) -> None:
         require(required_field in decision_chain_fields, f"{rel(path)}: loopContract.decisionChain.fields missing {required_field}")
     for policy in stop_policies:
         require(bool(re.match(r"^[a-z0-9][a-z0-9_]*$", policy)), f"{rel(path)}: invalid loop stop policy {policy!r}")
+    require("pending_target_plan_confirmation" in stop_policies, f"{rel(path)}: loopContract.stopPolicies missing pending_target_plan_confirmation")
 
     adapters = manifest["runtimeAdapters"]
     require(isinstance(adapters, dict), f"{rel(path)}: runtimeAdapters must be an object")

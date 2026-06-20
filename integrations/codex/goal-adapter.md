@@ -47,18 +47,21 @@ Before starting a Codex-goal run:
 
 Every Codex-goal run must persist or report:
 
-- Loop goal window: `finalGoal`, `phaseGoals`, `currentPhase`, `acceptanceCriteria`, `reportCadence`, and `finalDecision`.
+- Loop goal window: `finalGoal`, `phaseGoals`, `currentPhase`, `acceptanceCriteria`, `targetPlan`, `targetPlanConfirmation`, `reportCadence`, and `finalDecision`.
 - Release coverage matrix: `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, and `releaseDecision` when the goal is release-focused or production-grade.
 - Per-phase decision chain: `phase`, `evidence`, `rule`, `options`, `decision`, `rationale`, and `nextAction` printed in each phase report.
 - `loop-state.json`: current loop state, blocker, stop policy, and next action.
 - `current-status.md`: human-readable heartbeat for long-running loops.
 - `evidence/`: command output, MCP responses, screenshots, logs, artifacts, or assertion reports.
 
+Before the first loop action, the agent must present the provided or inferred `targetPlan` to the user as a confirmation proposal. Require explicit user confirmation before entering the loop. If the target plan is unconfirmed, stop as `BLOCKED: pending loop target plan confirmation`; do not start, resume, or continue loop execution until the user confirms or edits the plan.
+
 If the agent cannot establish the loop goal window or write these artifacts in the target environment, it must report the same fields in chat and stop on missing evidence rather than claiming release readiness.
 
 ## Safety Rules
 
 - Keep confirmation gates authoritative even when `/goal` is continuous.
+- Require explicit user confirmation before entering the loop when a target plan has been provided, inferred, or discovered from product-native data.
 - Stop on pending user confirmation, missing evidence, unsafe production action, or a domain blocker.
 - Treat health checks, smoke checks, and process keepalive as connectivity evidence only; they are not release coverage by themselves.
 - When the same blocker repeats, switch from rerun into diagnosis, productized repair, and verification, or stop as `BLOCKED` / `NO-GO`.

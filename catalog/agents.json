@@ -75,6 +75,8 @@
           "finalGoal",
           "phaseGoals",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "coverageMatrix",
@@ -91,6 +93,8 @@
           "phaseGoals",
           "currentPhase",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "useCaseId",
@@ -123,7 +127,8 @@
           "pending_self_evolution_approval",
           "explicit_user_stop",
           "coverage_matrix_complete",
-          "repeated_blocker_requires_repair"
+          "repeated_blocker_requires_repair",
+          "pending_target_plan_confirmation"
         ],
         "cadenceModes": [
           "continuous",
@@ -151,13 +156,18 @@
             "phaseGoals",
             "currentPhase",
             "acceptanceCriteria",
+            "targetPlan",
+            "targetPlanConfirmation",
             "reportCadence",
             "finalDecision"
           ],
           "phaseGoalRequired": true,
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
-          "finalDecisionRequired": true
+          "finalDecisionRequired": true,
+          "confirmBeforeLoop": true,
+          "targetPlanRequired": true,
+          "targetPlanConfirmationRequired": true
         },
         "coverageMatrix": {
           "required": true,
@@ -320,6 +330,8 @@
           "finalGoal",
           "phaseGoals",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "coverageMatrix",
@@ -336,6 +348,8 @@
           "phaseGoals",
           "currentPhase",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "round",
@@ -368,7 +382,8 @@
           "unsafe_protected_path_mutation",
           "explicit_user_stop",
           "coverage_matrix_complete",
-          "repeated_blocker_requires_repair"
+          "repeated_blocker_requires_repair",
+          "pending_target_plan_confirmation"
         ],
         "cadenceModes": [
           "always_on_interval",
@@ -395,13 +410,18 @@
             "phaseGoals",
             "currentPhase",
             "acceptanceCriteria",
+            "targetPlan",
+            "targetPlanConfirmation",
             "reportCadence",
             "finalDecision"
           ],
           "phaseGoalRequired": true,
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
-          "finalDecisionRequired": true
+          "finalDecisionRequired": true,
+          "confirmBeforeLoop": true,
+          "targetPlanRequired": true,
+          "targetPlanConfirmationRequired": true
         },
         "coverageMatrix": {
           "required": true,
@@ -566,6 +586,8 @@
           "stopCondition",
           "runMode",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "finalGoal",
           "phaseGoals",
           "reportCadence",
@@ -584,6 +606,8 @@
           "phaseGoals",
           "currentPhase",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "attempt",
@@ -614,6 +638,7 @@
           "maximum_duration",
           "maximum_attempts",
           "failed_readiness",
+          "pending_target_plan_confirmation",
           "failed_precheck",
           "release_decision",
           "explicit_user_stop",
@@ -646,13 +671,18 @@
             "phaseGoals",
             "currentPhase",
             "acceptanceCriteria",
+            "targetPlan",
+            "targetPlanConfirmation",
             "reportCadence",
             "finalDecision"
           ],
           "phaseGoalRequired": true,
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
-          "finalDecisionRequired": true
+          "finalDecisionRequired": true,
+          "confirmBeforeLoop": true,
+          "targetPlanRequired": true,
+          "targetPlanConfirmationRequired": true
         },
         "coverageMatrix": {
           "required": true,
@@ -803,6 +833,8 @@
           "finalGoal",
           "phaseGoals",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "coverageMatrix",
@@ -819,6 +851,8 @@
           "phaseGoals",
           "currentPhase",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "targetRef",
@@ -848,7 +882,8 @@
           "deadline",
           "explicit_user_stop",
           "coverage_matrix_complete",
-          "repeated_blocker_requires_repair"
+          "repeated_blocker_requires_repair",
+          "pending_target_plan_confirmation"
         ],
         "cadenceModes": [
           "continuous",
@@ -874,13 +909,18 @@
             "phaseGoals",
             "currentPhase",
             "acceptanceCriteria",
+            "targetPlan",
+            "targetPlanConfirmation",
             "reportCadence",
             "finalDecision"
           ],
           "phaseGoalRequired": true,
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
-          "finalDecisionRequired": true
+          "finalDecisionRequired": true,
+          "confirmBeforeLoop": true,
+          "targetPlanRequired": true,
+          "targetPlanConfirmationRequired": true
         },
         "coverageMatrix": {
           "required": true,
@@ -1035,6 +1075,8 @@
           "finalGoal",
           "phaseGoals",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "coverageMatrix",
@@ -1051,6 +1093,8 @@
           "phaseGoals",
           "currentPhase",
           "acceptanceCriteria",
+          "targetPlan",
+          "targetPlanConfirmation",
           "reportCadence",
           "finalDecision",
           "attempt",
@@ -1082,7 +1126,8 @@
           "fix_policy_boundary",
           "explicit_user_stop",
           "coverage_matrix_complete",
-          "repeated_blocker_requires_repair"
+          "repeated_blocker_requires_repair",
+          "pending_target_plan_confirmation"
         ],
         "cadenceModes": [
           "continuous",
@@ -1109,13 +1154,18 @@
             "phaseGoals",
             "currentPhase",
             "acceptanceCriteria",
+            "targetPlan",
+            "targetPlanConfirmation",
             "reportCadence",
             "finalDecision"
           ],
           "phaseGoalRequired": true,
           "finalGoalRequired": true,
           "acceptanceCriteriaRequired": true,
-          "finalDecisionRequired": true
+          "finalDecisionRequired": true,
+          "confirmBeforeLoop": true,
+          "targetPlanRequired": true,
+          "targetPlanConfirmationRequired": true
         },
         "coverageMatrix": {
           "required": true,

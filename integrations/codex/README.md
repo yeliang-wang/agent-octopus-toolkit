@@ -10,7 +10,9 @@ Each Codex agent must be declared in `manifests/agents/<agent>.json` and assigne
 
 Codex `/goal` is supported as the outer runtime for installed Codex agents. It does not replace each agent's `Goal-Driven Loop Mode`; it keeps the objective active while the agent-owned loop contract controls cadence, state, evidence, stop policies, and confirmation gates.
 
-For release, release-readiness, GA, public-beta, production-grade, or long-running product lifecycle goals, the installed agent must expand the user's goal into a release coverage matrix before running. The plan must include `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain`; every phase report must print the 阶段决策链 with evidence, rule, options, decision, rationale, and next action.
+For release, release-readiness, GA, public-beta, production-grade, or long-running product lifecycle goals, the installed agent must expand the user's goal into a release coverage matrix before running. The plan must include `targetPlan`, `targetPlanConfirmation`, `coverageMatrix`, `iterationPlan`, `evidenceMap`, `blockerPolicy`, `repairPolicy`, `releaseDecision`, and `decisionChain`; every phase report must print the 阶段决策链 with evidence, rule, options, decision, rationale, and next action.
+
+Before starting or resuming the loop, the installed agent must present the provided or inferred target plan to the user as a confirmation proposal. Require explicit user confirmation before entering the loop. If the target plan is unconfirmed, stop as `BLOCKED: pending loop target plan confirmation`; do not run loop actions until the user confirms or edits the plan.
 
 If the target project has no real customer production projects, installed agents may use the shared Production Representative Sandbox at `sandbox/production-representative/manifest.json`. Generated representative projects must still be registered through the target product and verified through real SCM, CI/CD, LLM/runtime, and product-native evidence boundaries before they count as release evidence.
 
