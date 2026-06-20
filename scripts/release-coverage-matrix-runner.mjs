@@ -165,7 +165,7 @@ async function runHttpStep(step) {
     const missing = step.envRequired.filter((name) => !process.env[name]);
     return { ok: missing.length === 0, envConfigured: Object.fromEntries(step.envRequired.map((name) => [name, Boolean(process.env[name])])), error: missing.length ? `missing env: ${missing.join(", ")}` : undefined };
   }
-  const data = await fetchJson(step.url, { auth: step.auth !== false, headers: resolveHeaders(step.headers ?? {}) });
+  const data = await fetchAny(step.url, { auth: step.auth !== false, headers: resolveHeaders(step.headers ?? {}) });
   const ok = matchesExpect(data, step.expect);
   return { ok, status: data.status, body: compactEvidence(data), error: ok ? undefined : "HTTP response did not match expected fields" };
 }
@@ -319,6 +319,19 @@ async function fetchJson(url, options = {}) {
   const response = await fetch(url, { headers: requestHeaders(options) });
   const text = await response.text();
   const body = text ? JSON.parse(text) : {};
+  if (!response.ok) throw new Error(`${url} returned ${response.status}: ${text.slice(0, 500)}`);
+  return body;
+}
+
+async function fetchAny(url, options = {}) {
+  const response = await fetch(url, { headers: requestHeaders(options) });
+  const text = await response.text();
+  let body;
+  try {
+    body = text ? JSON.parse(text) : {};
+  } catch {
+    body = { status: response.status, textTail: tail(text, 1000) };
+  }
   if (!response.ok) throw new Error(`${url} returned ${response.status}: ${text.slice(0, 500)}`);
   return body;
 }
