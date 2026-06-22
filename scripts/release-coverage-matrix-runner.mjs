@@ -88,6 +88,7 @@ while (true) {
       iteration,
       blocker: stoppedResult.blocker,
       policy: blockerStop.policy,
+      repairWorkflows: summarizeWorkflowTypes(stoppedResult.repairWorkflows ?? []),
       finalReport: finalReportPath
     });
     process.exit(blockerStop.exitCode);
@@ -168,6 +169,7 @@ async function runIteration(attempt) {
 
   const blockerRow = coverageMatrix.find((item) => item.status !== "PASS" && item.required !== false);
   const blocker = blockerRow ? `${blockerRow.capability}/${blockerRow.scenario}: ${blockerRow.blocker}` : "";
+  const compactReleaseDecision = compactDecision(releaseDecision);
   const result = {
     attempt,
     projectId: profile.projectId,
@@ -178,11 +180,16 @@ async function runIteration(attempt) {
     commands,
     summary: compactSummary(unwrapData(latestSummary)),
     releaseEvidence: compactEvidence(releaseEvidence),
-    releaseDecision: compactDecision(releaseDecision),
+    releaseDecision: compactReleaseDecision,
     blocker,
+    repairWorkflows: [],
     nextAction: blocker ? "Continue repair loop at next cadence." : "Continue until product-native release decision reaches GO.",
     updatedAt: new Date().toISOString()
   };
+  result.repairWorkflows = buildRepairWorkflows(result);
+  if (result.repairWorkflows.length > 0) {
+    result.nextAction = summarizeWorkflowNextAction(result.repairWorkflows);
+  }
   result.targetPlanSummary = buildIterationTargetPlanSummary(result);
   return result;
 }
@@ -275,6 +282,7 @@ function baseState(result) {
     summary: result.summary,
     blocker: result.blocker,
     nextAction: result.nextAction,
+    repairWorkflows: result.repairWorkflows ?? [],
     loopControl: result.loopControl,
     latestArtifact: path.join(artifactRoot, `iteration-${String(result.attempt ?? 0).padStart(4, "0")}.json`),
     iterationPlanTargetSummaries: collectIterationTargetPlanSummaries(result),
@@ -316,6 +324,7 @@ function writeFinalReport(result, terminalReason) {
     summary: result.summary,
     blocker: result.blocker,
     nextAction: result.nextAction,
+    repairWorkflows: result.repairWorkflows ?? [],
     artifacts: {
       lifecycleRoot,
       status: statusPath,
@@ -414,6 +423,10 @@ Generated: ${report.generatedAt}
 - Loop control: ${report.finalTargetSummary.loopControl?.status ?? "RUNNING"}
 - Conclusion: ${report.finalTargetSummary.conclusion}
 
+## Repair Workflows
+
+${renderRepairWorkflowsMarkdown(report.repairWorkflows ?? [])}
+
 ## Target Plan
 
 - Confirmation: ${report.targetPlanConfirmation?.status ?? "missing"}
@@ -491,6 +504,10 @@ ${state.blocker || "none"}
 - Policy: ${state.loopControl?.policy ?? "continue"}
 - Reason: ${state.loopControl?.reason ?? "none"}
 - Resume command: ${state.loopControl?.resumeCommand ?? "none"}
+
+## Repair Workflows
+
+${renderRepairWorkflowsMarkdown(state.repairWorkflows ?? state.loopControl?.repairWorkflows ?? [])}
 
 ## Coverage Matrix
 
@@ -574,19 +591,309 @@ function countConsecutiveBlocker(blocker) {
 
 function withLoopControl(result, blockerStopResult) {
   const resumeCommand = `npm --prefix ${repoRoot} run release:runner -- --profile ${profilePath}`;
+  const repairWorkflows = result.repairWorkflows?.length ? result.repairWorkflows : buildRepairWorkflows(result);
   return {
     ...result,
-    nextAction: blockerPolicy.nextAction ?? "Stop the loop, repair the product blocker, verify targeted evidence, then resume the runner.",
+    repairWorkflows,
+    nextAction: summarizeWorkflowNextAction(repairWorkflows) || blockerPolicy.nextAction || "Stop the loop, repair the product blocker, verify targeted evidence, then resume the runner.",
     loopControl: {
       status: "PAUSED_FOR_REPAIR",
       policy: blockerStopResult.policy,
       reason: blockerStopResult.reason,
       blocker: result.blocker,
       repairRequired: true,
+      repairWorkflows,
       resumeCommand,
       pausedAt: new Date().toISOString()
     }
   };
+}
+
+function buildRepairWorkflows(result) {
+  if (!result.blocker) return [];
+  const now = new Date().toISOString();
+  const workflows = [];
+  const failedRows = (result.coverageMatrix ?? []).filter((item) => item.required !== false && item.status !== "PASS");
+  for (const rowItem of failedRows) {
+    if (`${rowItem.capability}/${rowItem.scenario}`.toLowerCase().includes("release-decision") && result.releaseDecision?.failedCriteriaDetails?.length) continue;
+    workflows.push(workflowForMatrixRow(rowItem, result, now));
+  }
+  for (const criterion of result.releaseDecision?.failedCriteriaDetails ?? []) {
+    workflows.push(workflowForReleaseCriterion(criterion, result, now));
+  }
+  return dedupeWorkflows(workflows).map((workflow, index) => ({
+    ...workflow,
+    id: `${result.projectId}-${result.releaseTarget.toLowerCase()}-repair-${String(result.attempt).padStart(4, "0")}-${index + 1}-${workflow.type}`,
+    createdAt: now
+  }));
+}
+
+function workflowForMatrixRow(rowItem, result, now) {
+  const key = `${rowItem.capability}/${rowItem.scenario}`.toLowerCase();
+  if (key.includes("production-e2e")) {
+    return repairWorkflow({
+      type: "product-defect",
+      severity: "P0",
+      summary: "Production E2E failed on a required real-boundary release row.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "production-lifecycle-governor",
+      commands: ["npm run check", "npm run test:e2e:production"],
+      evidenceRequired: [
+        "production E2E exits 0 with real LLM, SCM, code-upgrader, and Jenkins boundaries",
+        "changed product code or configuration is committed before loop resume",
+        "no mock/fake/stub/simulator/fixture-only proof is counted"
+      ],
+      steps: [
+        step("diagnose", "Read the failing iteration artifact, command stderr tail, and product runtime logs to identify the exact product defect."),
+        step("repair", "Patch the product code/configuration that caused the E2E failure; do not weaken release criteria."),
+        step("verify", "Run npm run check and npm run test:e2e:production successfully."),
+        step("resume", "Resume the release runner only after targeted verification passes.")
+      ],
+      resumeAllowedWhen: "Targeted product verification and production E2E both pass."
+    });
+  }
+  if (key.includes("npm-check") || key.includes("repository")) {
+    return repairWorkflow({
+      type: "repository-quality",
+      severity: "P0",
+      summary: "Repository quality gate failed.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "production-lifecycle-governor",
+      commands: ["npm run check"],
+      evidenceRequired: ["npm run check exits 0"],
+      steps: [
+        step("diagnose", "Inspect the failing check output and identify the broken package or test."),
+        step("repair", "Fix the code, tests, or generated assets without bypassing the check."),
+        step("verify", "Run npm run check successfully."),
+        step("resume", "Resume the release runner after the quality gate passes.")
+      ],
+      resumeAllowedWhen: "Repository quality gate exits 0."
+    });
+  }
+  if (key.includes("jenkins") || key.includes("pipeline")) {
+    return repairWorkflow({
+      type: "external-ci-boundary",
+      severity: "P0",
+      summary: "Required Jenkins/CI boundary did not pass.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "scm-sync-governor",
+      commands: [],
+      evidenceRequired: ["Jenkins endpoint/job is reachable through the real configured boundary", "pipeline run succeeds or produces actionable failure logs"],
+      steps: [
+        step("diagnose", "Inspect Jenkins connectivity, credentials, job name, parameters, and latest build logs."),
+        step("repair", "Fix connector configuration, job parameters, or the product pipeline definition."),
+        step("verify", "Trigger or query the real Jenkins job and capture successful boundary evidence."),
+        step("resume", "Resume only after Jenkins evidence is real and passing.")
+      ],
+      resumeAllowedWhen: "Real Jenkins boundary and required job evidence are passing."
+    });
+  }
+  if (key.includes("gitlab") || key.includes("github") || key.includes("scm")) {
+    return repairWorkflow({
+      type: "scm-boundary",
+      severity: "P0",
+      summary: "Required SCM boundary did not pass.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "scm-sync-governor",
+      commands: [],
+      evidenceRequired: ["SCM API is reachable with the configured token", "repository branch/MR operations are proven through the real provider"],
+      steps: [
+        step("diagnose", "Inspect SCM token, repository settings, branch permissions, and API response."),
+        step("repair", "Fix credentials, repository registration, branch policy, or provider configuration."),
+        step("verify", "Run the real SCM boundary check and capture provider response evidence."),
+        step("resume", "Resume after SCM evidence is passing.")
+      ],
+      resumeAllowedWhen: "Real SCM boundary evidence is passing."
+    });
+  }
+  if (key.includes("llm") || key.includes("glm")) {
+    return repairWorkflow({
+      type: "llm-boundary",
+      severity: "P0",
+      summary: "Required LLM boundary did not pass.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "mcp-e2e-governor",
+      commands: [],
+      evidenceRequired: ["LLM provider, model, and API key are configured", "a real invocation trace succeeds without printing secrets"],
+      steps: [
+        step("diagnose", "Inspect provider/model resolution, API key availability, and latest LLM error."),
+        step("repair", "Fix LLM route configuration, credentials, prompt contract, or output parsing."),
+        step("verify", "Run a real LLM-backed check and capture invocation metadata."),
+        step("resume", "Resume after real LLM evidence is passing.")
+      ],
+      resumeAllowedWhen: "Real LLM invocation chain passes."
+    });
+  }
+  if (key.includes("health") || key.includes("runtime") || key.includes("code-upgrader")) {
+    return repairWorkflow({
+      type: "runtime-health",
+      severity: "P0",
+      summary: "Required runtime health check failed.",
+      blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+      ownerAgent: "production-lifecycle-governor",
+      commands: [],
+      evidenceRequired: ["required health endpoint returns UP"],
+      steps: [
+        step("diagnose", "Inspect process, port, runtime mode, data root, and health endpoint response."),
+        step("repair", "Fix runtime configuration or product startup failure."),
+        step("verify", "Confirm the real health endpoint returns UP."),
+        step("resume", "Resume after runtime health is stable.")
+      ],
+      resumeAllowedWhen: "Required runtime health endpoint returns UP."
+    });
+  }
+  return repairWorkflow({
+    type: "coverage-evidence-gap",
+    severity: "P1",
+    summary: "Required release coverage row did not pass.",
+    blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
+    ownerAgent: "production-lifecycle-governor",
+    commands: [],
+    evidenceRequired: [rowItem.requiredEvidence],
+    steps: [
+      step("diagnose", "Inspect the failed coverage row and determine whether this is a product defect or missing real evidence."),
+      step("repair", "Productize the missing behavior or collect the required real evidence."),
+      step("verify", "Run the targeted coverage check successfully."),
+      step("resume", "Resume after the row is PASS or explicitly NO-GO with real evidence.")
+    ],
+    resumeAllowedWhen: "The required coverage row has real passing evidence or a documented terminal NO-GO."
+  });
+}
+
+function workflowForReleaseCriterion(criterion, result, now) {
+  const id = String(criterion.id ?? criterion.name ?? "").toLowerCase();
+  if (id.includes("soak")) {
+    return repairWorkflow({
+      type: "soak-governance",
+      severity: "P1",
+      summary: "GA soak duration has not reached the configured release target.",
+      blocker: `${criterion.id}: actual=${criterion.actual}, target=${criterion.target}`,
+      ownerAgent: "production-lifecycle-governor",
+      commands: [],
+      evidenceRequired: ["successful soak seconds reach the configured target", "soak evidence is from the product-native release decision"],
+      steps: [
+        step("diagnose", "Confirm current succeeded soak seconds and whether the soak clock is advancing."),
+        step("repair", "If soak is not advancing, repair the soak/evidence ingestion path; otherwise keep the loop in soak governance instead of product-defect repair."),
+        step("verify", "Refresh /api/v1/release/decisions and confirm succeededSoakSeconds increases or reaches target."),
+        step("resume", "Resume or continue only according to soak governance status.")
+      ],
+      resumeAllowedWhen: "Soak is advancing correctly or target soak seconds are satisfied."
+    });
+  }
+  if (id.includes("required-scenarios")) {
+    return repairWorkflow({
+      type: "scenario-evidence-gap",
+      severity: "P0",
+      summary: "Required GA scenarios are missing or not passing.",
+      blocker: `${criterion.id}: ${formatEvidence(criterion.evidence)}`,
+      ownerAgent: "mcp-e2e-governor",
+      commands: [],
+      evidenceRequired: ["llm-failure-containment, scm-failure-containment, rollback, and other required scenarios have real PASS evidence"],
+      steps: [
+        step("diagnose", "List each NOT-RUN/FAIL scenario from the release decision and map it to the missing product path."),
+        step("repair", "Implement or execute the real scenario workflow; do not substitute smoke-only or fixture-only checks."),
+        step("verify", "Generate product-native release evidence showing each required scenario as PASS."),
+        step("resume", "Resume after required scenarios are PASS or explicitly terminal NO-GO with real evidence.")
+      ],
+      resumeAllowedWhen: "All required GA scenarios are product-native PASS or terminally justified."
+    });
+  }
+  if (id.includes("risk")) {
+    return repairWorkflow({
+      type: "risk-closure",
+      severity: "P0",
+      summary: "High or critical open release risks remain.",
+      blocker: `${criterion.id}: ${formatEvidence(criterion.evidence)}`,
+      ownerAgent: "production-lifecycle-governor",
+      commands: [],
+      evidenceRequired: ["high/critical open risks are closed, downgraded with evidence, or accepted through an explicit release decision"],
+      steps: [
+        step("diagnose", "Inspect the release risk register and identify each high/critical open risk."),
+        step("repair", "Close the risk through product fix, verified mitigation, or explicit governance decision."),
+        step("verify", "Regenerate release evidence and confirm highOpenRisks is zero or accepted by policy."),
+        step("resume", "Resume after risk closure evidence is product-native.")
+      ],
+      resumeAllowedWhen: "No unaccepted high/critical open risks remain."
+    });
+  }
+  return repairWorkflow({
+    type: "release-criterion",
+    severity: "P1",
+    summary: "A required release decision criterion failed.",
+    blocker: `${criterion.id}: actual=${criterion.actual}, target=${criterion.target}`,
+    ownerAgent: "production-lifecycle-governor",
+    commands: [],
+    evidenceRequired: criterion.evidence ?? [],
+    steps: [
+      step("diagnose", "Inspect the failed release criterion and source evidence."),
+      step("repair", "Fix the product, evidence, or governance gap behind the criterion."),
+      step("verify", "Regenerate the release decision and confirm the criterion passes."),
+      step("resume", "Resume after the release criterion is resolved.")
+    ],
+    resumeAllowedWhen: "The failed release criterion is resolved in /api/v1/release/decisions."
+  });
+}
+
+function repairWorkflow(fields) {
+  return {
+    type: fields.type,
+    severity: fields.severity,
+    summary: fields.summary,
+    blocker: fields.blocker,
+    ownerAgent: fields.ownerAgent,
+    stopLoop: true,
+    repairRequired: true,
+    resumeAllowedWhen: fields.resumeAllowedWhen,
+    commands: fields.commands ?? [],
+    evidenceRequired: fields.evidenceRequired ?? [],
+    steps: fields.steps ?? []
+  };
+}
+
+function step(action, instruction) {
+  return { action, instruction };
+}
+
+function dedupeWorkflows(workflows) {
+  const seen = new Set();
+  return workflows.filter((workflow) => {
+    const key = `${workflow.type}:${workflow.blocker}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function summarizeWorkflowNextAction(workflows) {
+  if (!workflows.length) return "";
+  const types = summarizeWorkflowTypes(workflows).join(", ");
+  return `Stop the matrix loop, execute repair workflow(s) by blocker type [${types}], verify required real evidence, then resume the runner.`;
+}
+
+function summarizeWorkflowTypes(workflows) {
+  return [...new Set(workflows.map((workflow) => workflow.type))];
+}
+
+function renderRepairWorkflowsMarkdown(workflows) {
+  if (!workflows.length) return "- none";
+  return workflows.map((workflow) => [
+    `### ${workflow.type}`,
+    "",
+    `- Severity: ${workflow.severity}`,
+    `- Owner agent: ${workflow.ownerAgent}`,
+    `- Summary: ${workflow.summary}`,
+    `- Blocker: ${workflow.blocker}`,
+    `- Resume allowed when: ${workflow.resumeAllowedWhen}`,
+    `- Commands: ${workflow.commands?.length ? workflow.commands.join("; ") : "none"}`,
+    "- Evidence required:",
+    ...(workflow.evidenceRequired ?? []).map((item) => `  - ${item}`),
+    "- Steps:",
+    ...(workflow.steps ?? []).map((item) => `  - ${item.action}: ${item.instruction}`)
+  ].join("\n")).join("\n\n");
+}
+
+function formatEvidence(evidence) {
+  return Array.isArray(evidence) ? evidence.join("; ") : String(evidence ?? "");
 }
 
 async function fetchJson(url, options = {}) {
@@ -663,13 +970,25 @@ function decisionTimestamp(decision) {
 
 function compactDecision(decision) {
   if (!decision) return undefined;
+  const criteria = Array.isArray(decision.criteria) ? decision.criteria : [];
+  const failedCriteriaDetails = criteria
+    .filter((criterion) => criterion?.status === "FAIL")
+    .map((criterion) => ({
+      id: criterion.id,
+      name: criterion.name,
+      actual: criterion.actual,
+      target: criterion.target,
+      required: criterion.required,
+      evidence: Array.isArray(criterion.evidence) ? criterion.evidence.slice(0, 20) : []
+    }));
   return {
     id: decision.id,
     status: decision.status,
-    failedCriteria: decision.failedCriteria ?? decision.summary?.failedCriteria,
-    passedCriteria: decision.passedCriteria ?? decision.summary?.passedCriteria,
+    failedCriteria: decision.failedCriteria ?? decision.summary?.failedCriteria ?? failedCriteriaDetails.length,
+    passedCriteria: decision.passedCriteria ?? decision.summary?.passedCriteria ?? criteria.filter((criterion) => criterion?.status === "PASS").length,
     highOpenRisks: decision.highOpenRisks ?? decision.summary?.highOpenRisks,
-    createdAt: decision.createdAt
+    failedCriteriaDetails,
+    createdAt: decision.createdAt ?? decision.generatedAt
   };
 }
 
@@ -694,6 +1013,7 @@ function compactResult(result) {
     releaseDecision: result.releaseDecision,
     summary: result.summary,
     blocker: result.blocker,
+    repairWorkflows: summarizeWorkflowTypes(result.repairWorkflows ?? []),
     nextAction: result.nextAction
   };
 }

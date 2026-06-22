@@ -37,7 +37,23 @@
       "mode": "stop-on-required-blocker",
       "reason": "GA release coverage blockers require productized repair before the next loop run.",
       "nextAction": "Stop the matrix loop, repair the product blocker with real evidence, verify targeted checks, then resume the runner.",
-      "exitCode": 2
+      "exitCode": 2,
+      "repairWorkflows": {
+        "enabled": true,
+        "types": [
+          "product-defect",
+          "repository-quality",
+          "runtime-health",
+          "external-ci-boundary",
+          "scm-boundary",
+          "llm-boundary",
+          "soak-governance",
+          "scenario-evidence-gap",
+          "risk-closure",
+          "coverage-evidence-gap",
+          "release-criterion"
+        ]
+      }
     },
     "finalReports": {
       "markdown": "data/production-lifecycle/evopilot-ga-release-matrix/final-report.md",

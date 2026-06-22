@@ -56,7 +56,31 @@
             "repeatedThreshold": { "type": "integer", "minimum": 1 },
             "reason": { "type": "string" },
             "nextAction": { "type": "string" },
-            "exitCode": { "type": "integer" }
+            "exitCode": { "type": "integer" },
+            "repairWorkflows": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "types": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "product-defect",
+                      "repository-quality",
+                      "runtime-health",
+                      "external-ci-boundary",
+                      "scm-boundary",
+                      "llm-boundary",
+                      "soak-governance",
+                      "scenario-evidence-gap",
+                      "risk-closure",
+                      "coverage-evidence-gap",
+                      "release-criterion"
+                    ]
+                  }
+                }
+              }
+            }
           }
         },
         "finalReports": {
