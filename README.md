@@ -34,7 +34,6 @@ It provides:
 | `product-evolution-lab` | Generic product evolution lab for authorized materials, product E2E pressure, improvement evidence, review closure, and goal-driven loops. |
 | `scm-sync-governor` | SCM synchronization, commit, push, PR/MR/CI boundaries, and conflict handling. |
 | `mcp-e2e-governor` | MCP intelligent-agent E2E lifecycle governor: discovery, prompt confirmation, execution, diagnosis, controlled code-fix, and evidence-backed self-evolution proposals. |
-| `production-lifecycle-governor` | Generic full production lifecycle governance with readiness, cleanup, non-mock precheck, configurable-duration validation, release coverage matrix, per-phase decision chain, release evidence, risk register, and GO/NO-GO decisions. |
 | `user-flow-debug` | Real Dashboard user-flow debugging with runtime-flow discovery, screenshots, artifacts, role validation, diagnosis, and controlled fixes. |
 
 ## Plugins
@@ -43,7 +42,6 @@ It provides:
 | --- | --- |
 | `git-workflow` | `scm-sync-governor` |
 | `mcp-e2e-governance` | `mcp-e2e-governor`, `user-flow-debug` |
-| `production-lifecycle` | `production-lifecycle-governor` |
 | `product-evolution-lab` | `product-evolution-lab` |
 
 ## Repository Strategy
@@ -60,7 +58,6 @@ Agents should graduate to an independent repository only when they have an indep
 
 | Product Line | Plugin Boundary | Split Readiness |
 | --- | --- | --- |
-| Production lifecycle governance | `plugins/production-lifecycle/` | Candidate only after it exposes an independent release-governance CLI/API and release cadence. |
 | MCP E2E governance | `plugins/mcp-e2e-governance/` | Candidate only after MCP E2E execution becomes a standalone product surface. |
 | SCM workflow governance | `plugins/git-workflow/` | Keep as a platform plugin unless it becomes a dedicated Git/CI agent product. |
 | Product evolution lab | `plugins/product-evolution-lab/` | Keep in-platform while it depends on shared profiles, runners, and evidence stores. |
@@ -96,6 +93,18 @@ Plugin contracts live in `plugins/<plugin>/plugin.json`. `scripts/generate-catal
 `npm run release:check` is the public-beta release gate. It checks package metadata, license, agent/plugin lifecycle state, loop contract coverage, Codex goal plans, generated outputs, deterministic eval, project-scoped Codex install drift, and whitespace safety.
 
 The release target is intentionally precise: Octopus AgentOps is a release-ready subagent operations platform and control plane, not a replacement for broad agent frameworks such as LangGraph, CrewAI, AutoGen, or OpenHands. See `docs/release-readiness.md` and `docs/competitive-baseline.md` for the release bar and comparison boundary.
+
+Stable GA is a separate hardening target. The public-beta gate may pass while
+stable GA remains blocked by lifecycle, CI, real-project evidence, distribution,
+contract, or operability gaps:
+
+```bash
+npm run release:check:ga
+npm run release:check:ga -- --json
+```
+
+See `docs/ga-release-plan.md`, `docs/ga-criteria.md`, and
+`docs/support-matrix.md` for the stable GA plan and support boundary.
 
 ### Portable Sandbox
 
@@ -151,7 +160,6 @@ The matrix keeps the loop tied to product behavior rather than process keepalive
 - `repairPolicy`: repeated blockers move from rerun into diagnosis, productized repair, verification, escalation, or `BLOCKED` / `NO-GO`.
 - `decisionChain`: every phase report prints the 阶段决策链: evidence, rule, options, decision, rationale, and next action.
 
-This means a future prompt can be short, such as `Use production-lifecycle-governor to take this project through a release coverage matrix loop toward public-beta readiness.` The agent is responsible for discovering product-specific coverage rows and printing the decision chain for each phase.
 
 ### Project Profile Runner
 
@@ -218,13 +226,17 @@ npm run agents:codex-status -- --project-root /path/to/your/project
 
 See `integrations/codex/goal-adapter.md` and `examples/codex-goal/` for runnable patterns.
 
-### Product Evolution, MCP E2E, And Production Lifecycle Governance
+
+### Production Lifecycle Governance Moved To ProofOps
+
+The extracted release lifecycle subagent has been extracted into [ProofOps](https://github.com/yeliang-wang/ProofOps). Use ProofOps for demo-to-GA maturity targets, architecture readiness, release coverage matrices, product-native GO/NO-GO decisions, and production lifecycle evidence loops. Octopus AgentOps now keeps reusable engineering agents, packaging, manifests, generated distributions, and install drift governance.
+
+### Product Evolution And MCP E2E Governance
 
 `mcp-e2e-governor` governs MCP product journeys from code-first discovery to prompt confirmation, execution, assertions, diagnosis, and self-evolution proposal gating.
 
 `product-evolution-lab` runs external product-evolution pressure through configured product profiles. It does not assume a specific project layout. Configure product-specific readiness, E2E, improvement, and review behavior through product-owned commands or profile data; Octopus AgentOps stores status and run evidence under `data/product-evolution-lab/`.
 
-`production-lifecycle-governor` turns the full production validation and release decision lifecycle into one reusable agent workflow. It first discovers real services, connected systems, data roots, traffic generators, lifecycle runners, LLM, SCM, and CI/CD boundaries, then builds a release coverage matrix with product-native evidence requirements and a per-phase decision chain. It then executes:
 
 ```text
 readiness
@@ -271,7 +283,6 @@ It reads agent and plugin metadata from manifest/catalog files, then supports se
 | Local diagnostics depend on OS-specific commands. | The sandbox provides portable HTTP, port, artifact, and Git checks. |
 | Git sync, commit, push, PR/MR, and CI actions blur into one risky operation. | `scm-sync-governor` makes each step explicit and confirmation-bound. |
 | User-flow validation bypasses the real UI. | `user-flow-debug` requires real Dashboard operation and screenshot evidence. |
-| Production validation accidentally uses mock/demo paths. | `production-lifecycle-governor` blocks product-grade claims unless real boundaries are proven. |
 | Long-running loops prove service health but miss core release scenarios. | Release coverage matrix loop requires scenario rows, evidence mapping, repair policy, and per-phase decision chains. |
 | Installed-project edits flow back without review. | Offline proposals are generated and accepted only by the Octopus AgentOps maintainer. |
 
@@ -385,6 +396,12 @@ Run the public-beta release gate:
 npm run release:check
 ```
 
+Report stable GA blockers:
+
+```bash
+npm run release:check:ga
+```
+
 Use the control plane:
 
 ```bash
@@ -423,7 +440,6 @@ SCM 同步：
 通用产品生产生命周期：
 
 ```text
-使用 production-lifecycle-governor，基于当前项目发现真实服务、接入项目、流量发生器、LLM、SCM 和 CI/CD 配置。请清理旧固定时长脚本、stale heartbeat、历史运行数据、过期报告和临时日志；保留项目注册、连接器、规则、环境和审计。然后做 readiness、非 mock 预检，预检通过后按我指定的时长启动长稳验证，并每 30 分钟汇报产品自身和每个接入项目的健康、流量、机会点、代码升级、SCM、CI/CD、治理门禁、release evidence、release coverage matrix、风险登记、每阶段的阶段决策链和 GO/NO-GO 结论。
 ```
 
 time-driven 本地调试示例：

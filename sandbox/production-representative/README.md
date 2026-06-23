@@ -103,7 +103,7 @@ Release coverage starts only after EvoPilot returns the registered projects from
 
 All packaged agents may read `manifest.json`:
 
-- `production-lifecycle-governor` converts the project set into a release coverage matrix.
+- Use ProofOps for production lifecycle release coverage matrix governance.
 - `mcp-e2e-governor` uses `mcp-tooling` for MCP contract lifecycle validation.
 - `user-flow-debug` uses `web-dashboard` for real UI flow checks.
 - `scm-sync-governor` validates Git, branch, commit, and CI boundaries.

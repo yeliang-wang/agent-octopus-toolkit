@@ -1,6 +1,6 @@
 {
   "schema": "agent-octopus-plugin-catalog/v1",
-  "pluginCount": 4,
+  "pluginCount": 3,
   "plugins": [
     {
       "schema": "agent-octopus-plugin/v1",
@@ -97,37 +97,6 @@
           "id": "product-evolution-lab",
           "lifecycle": "beta",
           "category": "product-evolution"
-        }
-      ]
-    },
-    {
-      "schema": "agent-octopus-plugin/v1",
-      "id": "production-lifecycle",
-      "version": "1.0.0",
-      "lifecycle": "beta",
-      "category": "production-validation",
-      "title": "Production Lifecycle",
-      "description": "Generic production lifecycle governance for agent products with real services, configurable validation duration, cleanup, non-mock precheck, long-run execution, evolution delivery, evidence bundles, and GO/NO-GO decisions.",
-      "agents": [
-        "production-lifecycle-governor"
-      ],
-      "installTargets": [
-        "claude-code",
-        "codex"
-      ],
-      "qualityGates": [
-        "manifest-validation",
-        "distribution-generation",
-        "agent-eval",
-        "install-roundtrip",
-        "release-readiness"
-      ],
-      "agentCount": 1,
-      "agentSummaries": [
-        {
-          "id": "production-lifecycle-governor",
-          "lifecycle": "beta",
-          "category": "production-lifecycle"
         }
       ]
     }

@@ -18,6 +18,10 @@ This means:
 
 It does not mean Octopus AgentOps is a general-purpose agent runtime or orchestration framework.
 
+Stable GA is tracked separately. Public-beta readiness can pass while the
+stable-GA gate still reports blockers. See `docs/ga-release-plan.md`,
+`docs/ga-criteria.md`, and `docs/support-matrix.md`.
+
 ## Required Gate
 
 Run:
@@ -30,6 +34,13 @@ For machine-readable evidence:
 
 ```bash
 npm run release:check -- --json
+```
+
+For stable GA blocker evidence:
+
+```bash
+npm run release:check:ga
+npm run release:check:ga -- --json
 ```
 
 The gate runs or verifies:
@@ -107,8 +118,8 @@ If `targetPlanConfirmation.status` is not `confirmed`, the runner writes `BLOCKE
 
 When the loop exits, the runner must write both:
 
-- `data/production-lifecycle/<lifecycleId>/final-report.md`
-- `data/production-lifecycle/<lifecycleId>/final-report.json`
+- `data/release-coverage/<lifecycleId>/final-report.md`
+- `data/release-coverage/<lifecycleId>/final-report.json`
 
 The final report must include the confirmed target plan, the final GA/release target summary, every iteration's loop plan/target summary, the latest coverage matrix, the final product-native release decision, blockers, and artifact paths. This is required so a final user can audit the whole loop against each phase target and the final GA Release Target, instead of only seeing the last status snapshot.
 
@@ -152,6 +163,9 @@ Use these lifecycle levels consistently:
 | `beta` | Eligible for public-beta release. Contract is explicit, validated, generated, and installable. |
 | `production-ready` | Reserved for agents with repeated real-project evidence across supported runtimes. |
 
+Stable GA requires the stable-GA gate to pass. Do not use the public-beta gate
+as a substitute for stable GA readiness.
+
 Promoting an agent to `beta` requires:
 
 1. A manifest with explicit inputs, outputs, evidence, confirmation gates, dangerous actions, `loopContract`, and `runtimeAdapters.codexGoal`.
@@ -192,6 +206,7 @@ npm run check
 npm run eval
 npm run agents:codex-status
 npm run release:check
+npm run release:check:ga
 git diff --check
 ```
 

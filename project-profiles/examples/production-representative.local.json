@@ -1,0 +1,101 @@
+{
+  "schema": "agent-octopus-project-profile/v1",
+  "projectId": "production-representative-sandbox",
+  "releaseTarget": "LOCAL-REPRESENTATIVE-EVIDENCE",
+  "lifecycleId": "production-representative-local-evidence",
+  "projectRoot": ".",
+  "targetPlan": {
+    "finalGoal": "Production Representative Sandbox produces local Git repositories with real validation command evidence.",
+    "phaseGoals": [
+      "sandbox-contract: verify the representative manifest, schemas, templates, and release evidence rule",
+      "repository-generation: create local Git repositories from templates",
+      "repository-validation: run each representative project's real validation commands",
+      "fault-boundary: prove the configured quality-gate fault remains a release blocker before repair"
+    ],
+    "acceptanceCriteria": [
+      "sandbox manifest verification exits 0",
+      "generated representative projects are real local Git repositories",
+      "all configured project validation commands exit 0",
+      "fault injection fails where configured and is reported as release-blocking evidence",
+      "no template-only, smoke-only, mock-only, or chat-only evidence is counted as release evidence"
+    ],
+    "finalDecision": ["GO", "CONDITIONAL-GO", "NO-GO", "BLOCKED"]
+  },
+  "targetPlanConfirmation": {
+    "status": "confirmed",
+    "confirmedAt": "2026-06-22T00:00:00.000Z",
+    "confirmedBy": "repository-maintainer",
+    "instruction": "Run local production representative sandbox evidence without external target-product registration claims."
+  },
+  "releaseDecision": {
+    "mode": "profile-final-report",
+    "goStatus": "GO",
+    "source": "runner coverage matrix and final report"
+  },
+  "runner": {
+    "mode": "once",
+    "intervalMs": 1000,
+    "blockerPolicy": {
+      "mode": "stop-on-required-blocker",
+      "reason": "Production representative local evidence blockers require sandbox repair before release evidence can be used.",
+      "nextAction": "Repair the representative sandbox or generated project validation failure, then rerun the profile.",
+      "exitCode": 2,
+      "repairWorkflows": {
+        "enabled": true,
+        "types": [
+          "repository-quality",
+          "scenario-evidence-gap",
+          "coverage-evidence-gap"
+        ]
+      }
+    },
+    "finalReports": {
+      "markdown": "data/release-coverage/production-representative-local-evidence/final-report.md",
+      "json": "data/release-coverage/production-representative-local-evidence/final-report.json",
+      "includeIterationTargetSummaries": true,
+      "includeFinalTargetSummary": true
+    }
+  },
+  "steps": [
+    {
+      "id": "sandbox-template-contract",
+      "type": "command",
+      "capability": "representative-projects",
+      "scenario": "sandbox-template-contract",
+      "command": "npm",
+      "args": ["run", "sandbox:verify"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run sandbox:verify exits 0",
+      "required": true
+    },
+    {
+      "id": "generate-local-repositories",
+      "type": "command",
+      "capability": "representative-projects",
+      "scenario": "local-git-generation",
+      "command": "python3",
+      "args": ["sandbox/production-representative/scripts/create-projects.py", "--force"],
+      "timeoutMs": 600000,
+      "requiredEvidence": "create-projects.py --force creates local Git repositories and runs validation commands",
+      "required": true
+    },
+    {
+      "id": "verify-generated-repositories",
+      "type": "sandbox-verify",
+      "capability": "representative-projects",
+      "scenario": "generated-repository-validation",
+      "includeFault": false,
+      "requiredEvidence": "verify-sandbox.py --generated exits 0 against generated local Git repositories",
+      "required": true
+    },
+    {
+      "id": "fault-injection-boundary",
+      "type": "sandbox-verify",
+      "capability": "quality-gate",
+      "scenario": "fault-injection-release-blocker",
+      "includeFault": true,
+      "requiredEvidence": "verify-sandbox.py --generated --include-fault proves the configured fault command fails as a release blocker",
+      "required": true
+    }
+  ]
+}

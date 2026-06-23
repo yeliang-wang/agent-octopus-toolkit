@@ -152,7 +152,6 @@
     }
   ],
   "sharedByAgents": [
-    "production-lifecycle-governor",
     "mcp-e2e-governor",
     "user-flow-debug",
     "scm-sync-governor",

@@ -38,7 +38,7 @@ Before starting a Codex-goal run:
 3. Render the adapter plan:
 
    ```bash
-   npm run agents:goal-plan -- --agent production-lifecycle-governor --project-id my-project "Take this project through a release coverage matrix loop toward public-beta readiness"
+   npm run agents:goal-plan -- --agent mcp-e2e-governor --project-id my-project "Prove the MCP onboarding journey"
    ```
 
 4. Start `/goal` in Codex with the rendered outer goal, then run the selected installed agent as the inner loop protocol.

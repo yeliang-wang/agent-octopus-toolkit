@@ -1,0 +1,129 @@
+{
+  "schema": "agent-octopus-project-profile/v1",
+  "projectId": "octopus-agentops",
+  "releaseTarget": "PUBLIC-BETA",
+  "lifecycleId": "octopus-agentops-public-beta",
+  "projectRoot": ".",
+  "targetPlan": {
+    "finalGoal": "Octopus AgentOps public-beta release gate remains reproducible from the source checkout.",
+    "phaseGoals": [
+      "source-readiness: verify generated distributions and catalogs are current",
+      "contract-readiness: validate manifests, schemas, and packaged agent contracts",
+      "quality-readiness: run the full local check and deterministic eval gates",
+      "release-readiness: prove the public-beta release gate still passes"
+    ],
+    "acceptanceCriteria": [
+      "npm run generate -- --check exits 0",
+      "npm run validate exits 0",
+      "npm run check exits 0",
+      "npm run eval exits 0",
+      "npm run release:check exits 0",
+      "git diff --check exits 0",
+      "evidence uses the real source checkout and real validation commands"
+    ],
+    "finalDecision": ["GO", "CONDITIONAL-GO", "NO-GO", "BLOCKED"]
+  },
+  "targetPlanConfirmation": {
+    "status": "confirmed",
+    "confirmedAt": "2026-06-22T00:00:00.000Z",
+    "confirmedBy": "repository-maintainer",
+    "instruction": "Run the local public-beta release profile as Octopus AgentOps self-evidence."
+  },
+  "releaseDecision": {
+    "mode": "profile-final-report",
+    "goStatus": "GO",
+    "source": "runner coverage matrix and final report"
+  },
+  "runner": {
+    "mode": "once",
+    "intervalMs": 1000,
+    "blockerPolicy": {
+      "mode": "stop-on-required-blocker",
+      "reason": "Public-beta self-evidence blockers require repository repair before release.",
+      "nextAction": "Fix the failed repository gate, rerun the profile, and keep the blocker visible until real evidence passes.",
+      "exitCode": 2,
+      "repairWorkflows": {
+        "enabled": true,
+        "types": [
+          "repository-quality",
+          "coverage-evidence-gap",
+          "release-criterion"
+        ]
+      }
+    },
+    "finalReports": {
+      "markdown": "data/release-coverage/octopus-agentops-public-beta/final-report.md",
+      "json": "data/release-coverage/octopus-agentops-public-beta/final-report.json",
+      "includeIterationTargetSummaries": true,
+      "includeFinalTargetSummary": true
+    }
+  },
+  "steps": [
+    {
+      "id": "generated-distributions",
+      "type": "command",
+      "capability": "source-readiness",
+      "scenario": "generated-distribution-drift",
+      "command": "npm",
+      "args": ["run", "generate", "--", "--check"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run generate -- --check exits 0",
+      "required": true
+    },
+    {
+      "id": "contract-validation",
+      "type": "command",
+      "capability": "contract-readiness",
+      "scenario": "manifest-and-schema-validation",
+      "command": "npm",
+      "args": ["run", "validate"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run validate exits 0",
+      "required": true
+    },
+    {
+      "id": "check-suite",
+      "type": "command",
+      "capability": "quality-readiness",
+      "scenario": "local-check-suite",
+      "command": "npm",
+      "args": ["run", "check"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run check exits 0",
+      "required": true
+    },
+    {
+      "id": "deterministic-eval",
+      "type": "command",
+      "capability": "quality-readiness",
+      "scenario": "deterministic-agent-eval",
+      "command": "npm",
+      "args": ["run", "eval"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run eval exits 0",
+      "required": true
+    },
+    {
+      "id": "public-beta-release-gate",
+      "type": "command",
+      "capability": "release-readiness",
+      "scenario": "public-beta-gate",
+      "command": "npm",
+      "args": ["run", "release:check"],
+      "timeoutMs": 300000,
+      "requiredEvidence": "npm run release:check exits 0",
+      "required": true
+    },
+    {
+      "id": "whitespace-check",
+      "type": "command",
+      "capability": "source-readiness",
+      "scenario": "git-whitespace-check",
+      "command": "git",
+      "args": ["diff", "--check"],
+      "timeoutMs": 120000,
+      "requiredEvidence": "git diff --check exits 0",
+      "required": true
+    }
+  ]
+}

@@ -99,6 +99,31 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "command"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "command": { "type": "string", "minLength": 1 },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "cwd": { "type": "string" },
+          "logFile": { "type": "string" },
+          "healthUrl": { "type": "string" },
+          "readyTimeoutMs": { "type": "integer", "minimum": 1000 },
+          "readyPollMs": { "type": "integer", "minimum": 100 },
+          "env": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "expect": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
     "steps": {
       "type": "array",
       "items": {

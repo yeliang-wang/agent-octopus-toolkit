@@ -20,9 +20,9 @@ Render the adapter plan for an agent:
 
 ```bash
 npm run agents:goal-plan -- \
-  --agent production-lifecycle-governor \
+  --agent mcp-e2e-governor \
   --project-id your-project \
-  "Take this project through a release coverage matrix loop toward public-beta readiness"
+  "Prove the MCP onboarding journey"
 ```
 
 The generated Codex TOML files include a `Codex Goal Runtime Adapter` section from each agent manifest. The shared adapter guide is `integrations/codex/goal-adapter.md`.

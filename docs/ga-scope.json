@@ -1,0 +1,27 @@
+{
+  "schema": "agent-octopus-ga-scope/v1",
+  "id": "octopus-agentops-platform-stable-ga-candidate",
+  "releaseTarget": "stable-ga",
+  "scopeType": "scoped",
+  "agents": [
+    "mcp-e2e-governor",
+    "product-evolution-lab",
+    "scm-sync-governor",
+    "user-flow-debug"
+  ],
+  "plugins": [
+    "mcp-e2e-governance",
+    "product-evolution-lab",
+    "git-workflow"
+  ],
+  "projectProfiles": [
+    "project-profiles/examples/octopus-agentops.public-beta.json",
+    "project-profiles/examples/production-representative.local.json",
+    "project-profiles/examples/evopilot.ga.json"
+  ],
+  "nonGaComponentsPolicy": {
+    "allowedWhenDocumented": true,
+    "releaseNotesMustListBetaComponents": true
+  },
+  "productionEvidenceRule": "Scoped stable GA requires scoped Octopus platform components to be production-ready and every scoped project profile final report to be GO with targetReached=true. Production lifecycle governance has moved to ProofOps."
+}

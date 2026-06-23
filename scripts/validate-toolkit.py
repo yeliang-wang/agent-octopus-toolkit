@@ -250,6 +250,7 @@ def validate_project_profiles() -> None:
       require(final_reports.get("json", "").endswith("final-report.json"), f"{rel(path)}: runner.finalReports.json must end with final-report.json")
       require(final_reports.get("includeIterationTargetSummaries") is True, f"{rel(path)}: runner.finalReports.includeIterationTargetSummaries must be true")
       require(final_reports.get("includeFinalTargetSummary") is True, f"{rel(path)}: runner.finalReports.includeFinalTargetSummary must be true")
+      validate_project_profile_services(path, profile.get("services", []))
       steps = profile["steps"]
       require(isinstance(steps, list) and steps, f"{rel(path)}: steps must be non-empty")
       seen_step_ids = set()
@@ -260,7 +261,31 @@ def validate_project_profiles() -> None:
           seen_step_ids.add(step_id)
           require(step.get("type") in {"health", "command", "http", "boundary", "sandbox-verify", "sandbox-register", "release-evidence", "release-decision"}, f"{rel(path)}: invalid step type for {step_id}")
           require(isinstance(step.get("requiredEvidence"), str) and step["requiredEvidence"], f"{rel(path)}: step {step_id} missing requiredEvidence")
-      require(any(step.get("type") == "release-decision" for step in steps), f"{rel(path)}: project profile requires a release-decision step")
+      has_release_decision_step = any(step.get("type") == "release-decision" for step in steps)
+      release_decision_mode = profile.get("releaseDecision", {}).get("mode")
+      require(
+          has_release_decision_step or release_decision_mode == "profile-final-report",
+          f"{rel(path)}: project profile requires a release-decision step or releaseDecision.mode=profile-final-report",
+      )
+
+
+def validate_project_profile_services(path: Path, services: object) -> None:
+    require(isinstance(services, list), f"{rel(path)}: services must be a list when present")
+    seen_service_ids = set()
+    for service in services:
+        require(isinstance(service, dict), f"{rel(path)}: each service must be an object")
+        service_id = service.get("id")
+        require(isinstance(service_id, str) and service_id, f"{rel(path)}: service.id is required")
+        require(service_id not in seen_service_ids, f"{rel(path)}: duplicate service id {service_id}")
+        seen_service_ids.add(service_id)
+        require(isinstance(service.get("command"), str) and service["command"], f"{rel(path)}: service {service_id} missing command")
+        require(isinstance(service.get("args", []), list), f"{rel(path)}: service {service_id} args must be a list")
+        require(isinstance(service.get("env", {}), dict), f"{rel(path)}: service {service_id} env must be an object")
+        if service.get("healthUrl") is not None:
+            require(str(service["healthUrl"]).startswith(("http://", "https://")), f"{rel(path)}: service {service_id} healthUrl must be HTTP(S)")
+        if service.get("logFile") is not None:
+            require(isinstance(service["logFile"], str) and service["logFile"], f"{rel(path)}: service {service_id} logFile must be non-empty")
+
 
 def validate_manifest_shape(path: Path, manifest: dict) -> None:
     required = [

@@ -15,7 +15,7 @@ const profile = readJson(profilePath);
 const projectRoot = path.resolve(args.projectRoot ?? profile.projectRoot ?? path.dirname(profilePath));
 const lifecycleId = profile.lifecycleId;
 const tmpRoot = path.join(projectRoot, ".tmp", lifecycleId);
-const lifecycleRoot = path.join(projectRoot, "data", "production-lifecycle", lifecycleId);
+const lifecycleRoot = path.join(projectRoot, "data", "release-coverage", lifecycleId);
 const artifactRoot = path.join(lifecycleRoot, "artifacts");
 const statePath = path.join(lifecycleRoot, "loop-state.json");
 const statusPath = path.join(lifecycleRoot, "current-status.md");
@@ -26,6 +26,8 @@ const textLogPath = path.join(tmpRoot, "loop.log");
 const intervalMs = Number(args.intervalMs ?? profile.runner?.intervalMs ?? 30 * 60 * 1000);
 const once = Boolean(args.once) || profile.runner?.mode === "once";
 const blockerPolicy = profile.runner?.blockerPolicy ?? {};
+const managedServices = [];
+let shuttingDown = false;
 
 fs.mkdirSync(tmpRoot, { recursive: true });
 fs.mkdirSync(lifecycleRoot, { recursive: true });
@@ -51,11 +53,20 @@ if (profile.targetPlanConfirmation?.status !== "confirmed") {
 append({
   event: "loop.started",
   at: new Date().toISOString(),
-  agent: "production-lifecycle-governor",
+  agent: "octopus-release-runner",
   projectId: profile.projectId,
   releaseTarget: profile.releaseTarget,
   targetPlanConfirmation: "confirmed"
 });
+
+process.on("SIGINT", () => {
+  finish(130);
+});
+process.on("SIGTERM", () => {
+  finish(143);
+});
+
+await startManagedServices();
 
 let iteration = initialIteration();
 while (true) {
@@ -68,12 +79,12 @@ while (true) {
   if (result.releaseDecision?.status === (profile.releaseDecision?.goStatus ?? "GO")) {
     writeFinalReport(result, "release-target-reached");
     append({ event: "loop.finished", at: new Date().toISOString(), status: result.releaseDecision.status, iteration, finalReport: finalReportPath });
-    process.exit(0);
+    await finish(0);
   }
   if (once) {
     writeFinalReport(result, result.blocker ? "single-run-blocked" : "single-run-complete");
     append({ event: "loop.finished", at: new Date().toISOString(), status: result.releaseDecision?.status ?? "PENDING", iteration, finalReport: finalReportPath });
-    process.exit(result.blocker ? 1 : 0);
+    await finish(result.blocker ? 1 : 0);
   }
   const blockerStop = evaluateBlockerStop(result);
   if (blockerStop.stop) {
@@ -91,9 +102,16 @@ while (true) {
       repairWorkflows: summarizeWorkflowTypes(stoppedResult.repairWorkflows ?? []),
       finalReport: finalReportPath
     });
-    process.exit(blockerStop.exitCode);
+    await finish(blockerStop.exitCode);
   }
   await sleep(intervalMs);
+}
+
+async function finish(code) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  await stopManagedServices();
+  process.exit(code);
 }
 
 async function runIteration(attempt) {
@@ -136,7 +154,7 @@ async function runIteration(attempt) {
         blocker = evidence.ok ? "" : evidence.error ?? "representative project registration failed";
       } else if (step.type === "release-evidence") {
         latestSummary = await fetchJson(step.summaryUrl, { auth: true }).catch((error) => ({ error: String(error.message ?? error) }));
-        releaseEvidence = await postJson(step.url, buildReleaseEvidenceBody({ coverageMatrix, latestSummary, attempt }), { auth: true }).catch((error) => ({ error: String(error.message ?? error) }));
+        releaseEvidence = await postJson(step.url, buildReleaseEvidenceBody({ step, coverageMatrix, latestSummary, attempt }), { auth: true }).catch((error) => ({ error: String(error.message ?? error) }));
         evidence = compactEvidence(releaseEvidence);
         status = releaseEvidence?.error ? "BLOCKED" : "PASS";
         blocker = releaseEvidence?.error ?? "";
@@ -169,7 +187,7 @@ async function runIteration(attempt) {
 
   const blockerRow = coverageMatrix.find((item) => item.status !== "PASS" && item.required !== false);
   const blocker = blockerRow ? `${blockerRow.capability}/${blockerRow.scenario}: ${blockerRow.blocker}` : "";
-  const compactReleaseDecision = compactDecision(releaseDecision);
+  const compactReleaseDecision = compactDecision(releaseDecision) ?? profileFinalReportDecision(coverageMatrix, blocker, attempt);
   const result = {
     attempt,
     projectId: profile.projectId,
@@ -192,6 +210,96 @@ async function runIteration(attempt) {
   }
   result.targetPlanSummary = buildIterationTargetPlanSummary(result);
   return result;
+}
+
+async function startManagedServices() {
+  for (const service of profile.services ?? []) {
+    const healthUrl = service.healthUrl;
+    if (healthUrl && await serviceHealthOk(healthUrl, service).catch(() => false)) {
+      append({ event: "service.already_running", at: new Date().toISOString(), id: service.id, healthUrl });
+      managedServices.push({ id: service.id, external: true });
+      continue;
+    }
+    const cwd = path.resolve(projectRoot, service.cwd ?? ".");
+    const env = buildCommandEnv(service);
+    const logFile = path.resolve(projectRoot, service.logFile ?? path.join(".tmp", lifecycleId, `${service.id}.log`));
+    fs.mkdirSync(path.dirname(logFile), { recursive: true });
+    const logStream = fs.createWriteStream(logFile, { flags: "a" });
+    const child = spawn(service.command, service.args ?? [], {
+      cwd,
+      env,
+      shell: false,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    child.stdout.pipe(logStream, { end: false });
+    child.stderr.pipe(logStream, { end: false });
+    const record = { id: service.id, child, logStream, logFile };
+    managedServices.push(record);
+    append({ event: "service.started", at: new Date().toISOString(), id: service.id, pid: child.pid, command: [service.command, ...(service.args ?? [])], logFile });
+    child.on("exit", (code, signal) => {
+      append({ event: "service.exited", at: new Date().toISOString(), id: service.id, code, signal, logFile });
+    });
+    const ready = healthUrl ? await waitForServiceHealth(healthUrl, service) : { ok: true };
+    if (!ready.ok) {
+      append({ event: "service.health_failed", at: new Date().toISOString(), id: service.id, healthUrl, error: ready.error, logFile });
+    }
+  }
+}
+
+async function stopManagedServices() {
+  for (const service of [...managedServices].reverse()) {
+    if (service.external || !service.child) continue;
+    if (service.child.exitCode === null && !service.child.killed) {
+      service.child.kill("SIGTERM");
+      await Promise.race([
+        new Promise((resolve) => service.child.once("exit", resolve)),
+        sleep(5000).then(() => {
+          if (service.child.exitCode === null && !service.child.killed) service.child.kill("SIGKILL");
+        })
+      ]);
+    }
+    service.logStream?.end();
+  }
+}
+
+async function waitForServiceHealth(url, service) {
+  const timeoutMs = Number(service.readyTimeoutMs ?? 60_000);
+  const pollMs = Number(service.readyPollMs ?? 1000);
+  const deadline = Date.now() + timeoutMs;
+  let lastError = "";
+  while (Date.now() < deadline) {
+    const ok = await serviceHealthOk(url, service).catch((error) => {
+      lastError = String(error.message ?? error);
+      return false;
+    });
+    if (ok) return { ok: true };
+    const current = managedServices.find((item) => item.id === service.id);
+    if (current?.child?.exitCode !== null) {
+      return { ok: false, error: `service exited before healthy with code ${current.child.exitCode}` };
+    }
+    await sleep(pollMs);
+  }
+  return { ok: false, error: lastError || `health check timed out after ${timeoutMs}ms` };
+}
+
+async function serviceHealthOk(url, service = {}) {
+  const data = await fetchAny(url, { auth: service.auth === true, headers: resolveHeaders(service.headers ?? {}) });
+  return matchesExpect(data, service.expect ?? { status: "UP" });
+}
+
+function profileFinalReportDecision(coverageMatrix, blocker, attempt) {
+  if (profile.releaseDecision?.mode !== "profile-final-report") return undefined;
+  const requiredRows = coverageMatrix.filter((item) => item.required !== false);
+  const failedRows = requiredRows.filter((item) => item.status !== "PASS");
+  const status = failedRows.length === 0 ? (profile.releaseDecision?.goStatus ?? "GO") : "BLOCKED";
+  return {
+    id: `${profile.projectId}-${profile.releaseTarget.toLowerCase()}-profile-final-report-i${attempt}`,
+    status,
+    failedCriteria: failedRows.length,
+    highOpenRisks: status === "GO" ? 0 : failedRows.length,
+    source: profile.releaseDecision?.source ?? "runner coverage matrix and final report",
+    evidence: blocker || `${requiredRows.length}/${requiredRows.length} required coverage rows passed`
+  };
 }
 
 async function runHttpStep(step) {
@@ -229,7 +337,7 @@ async function runSandboxRegister(step) {
   return { ok, command, registrations: registrations.map((item) => ({ projectId: item.projectId, status: item.response?.status, validation: (item.response?.body?.data ?? item.response?.body)?.validation?.status })) };
 }
 
-function buildReleaseEvidenceBody({ coverageMatrix, latestSummary, attempt }) {
+function buildReleaseEvidenceBody({ step, coverageMatrix, latestSummary, attempt }) {
   const now = new Date().toISOString();
   const matrix = coverageMatrix.map((item) => ({
     id: `${item.capability}-${item.scenario}`,
@@ -239,13 +347,18 @@ function buildReleaseEvidenceBody({ coverageMatrix, latestSummary, attempt }) {
     evidence: item.blocker ? [item.blocker] : [item.requiredEvidence],
     updatedAt: now
   }));
+  const fileEvidence = readReleaseEvidenceFile(step.releaseEvidenceFile);
   return {
     id: `${profile.projectId}-${profile.releaseTarget.toLowerCase()}-${safeTimestamp(new Date())}-i${attempt}`,
     projectId: profile.projectId,
     target: profile.releaseTarget,
     source: "octopus-agentops release-coverage-matrix-runner",
     summary: compactSummary(unwrapData(latestSummary)),
-    scenarioMatrix: matrix,
+    scenarioMatrix: [
+      ...matrix,
+      ...(Array.isArray(step.scenarioMatrix) ? step.scenarioMatrix : []),
+      ...(Array.isArray(fileEvidence.scenarioMatrix) ? fileEvidence.scenarioMatrix : [])
+    ],
     policyEvaluations: matrix.map((item) => ({
       id: `policy-${item.id}`,
       name: item.name,
@@ -253,8 +366,19 @@ function buildReleaseEvidenceBody({ coverageMatrix, latestSummary, attempt }) {
       severity: item.status === "PASS" ? "LOW" : "HIGH",
       evidence: item.evidence
     })),
+    artifactPaths: [
+      ...(Array.isArray(step.artifactPaths) ? step.artifactPaths : []),
+      ...(Array.isArray(fileEvidence.artifactPaths) ? fileEvidence.artifactPaths : [])
+    ],
     createdAt: now
   };
+}
+
+function readReleaseEvidenceFile(rawPath) {
+  if (!rawPath) return {};
+  const filePath = path.resolve(projectRoot, rawPath);
+  if (!fs.existsSync(filePath)) return {};
+  return readJson(filePath);
 }
 
 function writeState(state, decisionChain) {
@@ -636,7 +760,7 @@ function workflowForMatrixRow(rowItem, result, now) {
       severity: "P0",
       summary: "Production E2E failed on a required real-boundary release row.",
       blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
-      ownerAgent: "production-lifecycle-governor",
+      ownerAgent: "octopus-release-runner",
       commands: ["npm run check", "npm run test:e2e:production"],
       evidenceRequired: [
         "production E2E exits 0 with real LLM, SCM, code-upgrader, and Jenkins boundaries",
@@ -658,7 +782,7 @@ function workflowForMatrixRow(rowItem, result, now) {
       severity: "P0",
       summary: "Repository quality gate failed.",
       blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
-      ownerAgent: "production-lifecycle-governor",
+      ownerAgent: "octopus-release-runner",
       commands: ["npm run check"],
       evidenceRequired: ["npm run check exits 0"],
       steps: [
@@ -730,7 +854,7 @@ function workflowForMatrixRow(rowItem, result, now) {
       severity: "P0",
       summary: "Required runtime health check failed.",
       blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
-      ownerAgent: "production-lifecycle-governor",
+      ownerAgent: "octopus-release-runner",
       commands: [],
       evidenceRequired: ["required health endpoint returns UP"],
       steps: [
@@ -747,7 +871,7 @@ function workflowForMatrixRow(rowItem, result, now) {
     severity: "P1",
     summary: "Required release coverage row did not pass.",
     blocker: `${rowItem.capability}/${rowItem.scenario}: ${rowItem.blocker}`,
-    ownerAgent: "production-lifecycle-governor",
+    ownerAgent: "octopus-release-runner",
     commands: [],
     evidenceRequired: [rowItem.requiredEvidence],
     steps: [
@@ -768,7 +892,7 @@ function workflowForReleaseCriterion(criterion, result, now) {
       severity: "P1",
       summary: "GA soak duration has not reached the configured release target.",
       blocker: `${criterion.id}: actual=${criterion.actual}, target=${criterion.target}`,
-      ownerAgent: "production-lifecycle-governor",
+      ownerAgent: "octopus-release-runner",
       commands: [],
       evidenceRequired: ["successful soak seconds reach the configured target", "soak evidence is from the product-native release decision"],
       steps: [
@@ -804,7 +928,7 @@ function workflowForReleaseCriterion(criterion, result, now) {
       severity: "P0",
       summary: "High or critical open release risks remain.",
       blocker: `${criterion.id}: ${formatEvidence(criterion.evidence)}`,
-      ownerAgent: "production-lifecycle-governor",
+      ownerAgent: "octopus-release-runner",
       commands: [],
       evidenceRequired: ["high/critical open risks are closed, downgraded with evidence, or accepted through an explicit release decision"],
       steps: [
@@ -821,7 +945,7 @@ function workflowForReleaseCriterion(criterion, result, now) {
     severity: "P1",
     summary: "A required release decision criterion failed.",
     blocker: `${criterion.id}: actual=${criterion.actual}, target=${criterion.target}`,
-    ownerAgent: "production-lifecycle-governor",
+    ownerAgent: "octopus-release-runner",
     commands: [],
     evidenceRequired: criterion.evidence ?? [],
     steps: [
@@ -1007,7 +1131,7 @@ function compactEvidence(value, max = 4000) {
 
 function compactResult(result) {
   return {
-    loopAgent: "production-lifecycle-governor",
+    loopAgent: "octopus-release-runner",
     iteration: result.attempt,
     currentPhase: result.currentPhase,
     releaseDecision: result.releaseDecision,

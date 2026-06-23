@@ -8,6 +8,7 @@
     "generate": "python3 scripts/generate-distributions.py && python3 scripts/generate-catalog.py",
     "eval": "python3 scripts/evaluate-agents.py",
     "release:check": "python3 scripts/release-readiness.py",
+    "release:check:ga": "python3 scripts/release-readiness.py --target stable-ga",
     "agents:list": "python3 scripts/octopus-control.py list",
     "plugins:list": "python3 scripts/octopus-control.py plugins",
     "agents:search": "python3 scripts/octopus-control.py search",

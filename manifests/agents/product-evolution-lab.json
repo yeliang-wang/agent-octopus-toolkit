@@ -33,8 +33,7 @@
     "hooks": [],
     "allowedSpawnAgents": [
       "mcp-e2e-governor",
-      "user-flow-debug",
-      "production-lifecycle-governor"
+      "user-flow-debug"
     ]
   },
   "purpose": "Generic dev-stage product evolution lab for rotating authorized materials, running product E2E pressure, collecting evidence, triggering improvement workflows, and validating human review closure.",

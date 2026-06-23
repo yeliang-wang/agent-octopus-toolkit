@@ -1,0 +1,43 @@
+name: Release Check
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Public-beta release readiness
+        run: npm run release:check -- --json | tee release-readiness.public-beta.json
+
+      - name: Stable GA release readiness
+        run: npm run release:check:ga -- --json | tee release-readiness.stable-ga.json
+
+      - name: Upload release readiness artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-readiness
+          path: |
+            release-readiness.public-beta.json
+            release-readiness.stable-ga.json

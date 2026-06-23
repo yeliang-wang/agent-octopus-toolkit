@@ -21,7 +21,6 @@ REQUIRED_PROJECTS = {
     "flaky-quality-gate",
 }
 REQUIRED_SHARED_AGENTS = {
-    "production-lifecycle-governor",
     "mcp-e2e-governor",
     "user-flow-debug",
     "scm-sync-governor",

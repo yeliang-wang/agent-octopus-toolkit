@@ -56,8 +56,8 @@
       }
     },
     "finalReports": {
-      "markdown": "data/production-lifecycle/evopilot-ga-release-matrix/final-report.md",
-      "json": "data/production-lifecycle/evopilot-ga-release-matrix/final-report.json",
+      "markdown": "data/release-coverage/evopilot-ga-release-matrix/final-report.md",
+      "json": "data/release-coverage/evopilot-ga-release-matrix/final-report.json",
       "includeIterationTargetSummaries": true,
       "includeFinalTargetSummary": true
     }
@@ -73,6 +73,41 @@
     "defaultToken": "evopilot-48h-local-token"
   },
   "baseUrl": "http://127.0.0.1:19876",
+  "services": [
+    {
+      "id": "evopilot-server",
+      "command": "npm",
+      "args": ["run", "server"],
+      "cwd": ".",
+      "logFile": "tmp/ga-run/server.log",
+      "healthUrl": "http://127.0.0.1:19876/health",
+      "readyTimeoutMs": 120000,
+      "env": {
+        "EVOPILOT_RUN_MODE": "prod",
+        "EVOPILOT_HOST": "127.0.0.1",
+        "EVOPILOT_PORT": "19876",
+        "EVOPILOT_API_TOKEN": "evopilot-48h-local-token",
+        "EVOPILOT_TOKENS": "admin:evopilot-48h-local-token:admin",
+        "EVOPILOT_REQUIRE_LLM": "true"
+      },
+      "expect": { "status": "UP" }
+    },
+    {
+      "id": "evopilot-code-upgrader",
+      "command": "node",
+      "args": ["scripts/internal-code-upgrader.mjs"],
+      "cwd": ".",
+      "logFile": "tmp/ga-run/code-upgrader.log",
+      "healthUrl": "http://127.0.0.1:3000/health",
+      "readyTimeoutMs": 120000,
+      "env": {
+        "EVOPILOT_RUN_MODE": "prod",
+        "EVOPILOT_CODE_UPGRADER_HOST": "127.0.0.1",
+        "EVOPILOT_CODE_UPGRADER_PORT": "3000"
+      },
+      "expect": { "status": "UP" }
+    }
+  ],
   "steps": [
     {
       "id": "evopilot-api-health",
@@ -223,12 +258,24 @@
       "required": true
     },
     {
+      "id": "ga-residual-scenarios",
+      "type": "command",
+      "capability": "release-scenarios",
+      "scenario": "llm-and-scm-failure-containment",
+      "command": "node",
+      "args": ["scripts/ga-residual-scenarios.mjs"],
+      "timeoutMs": 600000,
+      "requiredEvidence": "ga-residual-scenarios.mjs verifies real LLM and SCM failure containment without marking rollback or soak as passed",
+      "required": true
+    },
+    {
       "id": "release-evidence",
       "type": "release-evidence",
       "capability": "release-evidence",
       "scenario": "product-native-evidence",
       "url": "http://127.0.0.1:19876/api/v1/release/evidence",
       "summaryUrl": "http://127.0.0.1:19876/api/v1/summary",
+      "releaseEvidenceFile": "data/release-coverage/evopilot-ga-release-matrix/ga-residual-scenarios.json",
       "requiredEvidence": "POST /api/v1/release/evidence creates product-native release evidence",
       "required": true
     },
